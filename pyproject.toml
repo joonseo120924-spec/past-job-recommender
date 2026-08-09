@@ -1,0 +1,21 @@
+[project]
+name = "past-job-recommender"
+version = "0.1.0"
+description = "과거 경력을 바탕으로 다음 직무를 추천하고 스킬 갭을 알려주는 서비스"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "scikit-learn>=1.5",
+  "pydantic>=2.7",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "httpx>=0.27"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.setuptools]
+packages = ["app"]

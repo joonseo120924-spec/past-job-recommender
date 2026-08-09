@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>과거 경력 기반 직무 추천</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🧭</text></svg>">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <h1>과거 경력 기반 직무 추천</h1>
+    <p class="lede">지금까지의 경력을 입력하면 다음으로 옮겨갈 만한 직무와, 그 직무를 위해 채워야 할 역량을 알려드립니다.</p>
+  </header>
+
+  <main>
+    <form id="history-form" autocomplete="off">
+      <section id="roles" aria-label="경력 목록"></section>
+
+      <div class="form-actions">
+        <button type="button" id="add-role" class="secondary">+ 경력 추가</button>
+      </div>
+
+      <fieldset class="preferences">
+        <legend>추천 설정</legend>
+        <label>
+          관심 산업 <span class="hint">(선택, 쉼표로 구분)</span>
+          <input type="text" id="preferred-industries" list="industry-options" placeholder="예: 이커머스, 핀테크">
+        </label>
+        <label class="inline">
+          추천 개수
+          <input type="number" id="top-k" value="5" min="1" max="20">
+        </label>
+        <label class="inline checkbox">
+          <input type="checkbox" id="include-current">
+          현재 직무와 같은 직무도 포함
+        </label>
+      </fieldset>
+
+      <div class="form-actions">
+        <button type="submit" id="submit">추천 받기</button>
+      </div>
+    </form>
+
+    <div id="recognition" class="recognition" hidden></div>
+    <div id="error" class="error" role="alert" hidden></div>
+    <section id="results" aria-live="polite"></section>
+  </main>
+
+  <datalist id="skill-options"></datalist>
+  <datalist id="industry-options"></datalist>
+
+  <template id="role-template">
+    <fieldset class="role-card">
+      <legend>경력 <span class="role-index"></span></legend>
+      <button type="button" class="remove-role" title="이 경력 삭제" aria-label="이 경력 삭제">×</button>
+      <div class="grid">
+        <label>직무명 <span class="required">*</span>
+          <input type="text" class="title" required placeholder="예: 데이터 분석가">
+        </label>
+        <label>산업
+          <input type="text" class="industry" list="industry-options" placeholder="예: 이커머스">
+        </label>
+        <label>입사일 <span class="required">*</span>
+          <input type="date" class="start-date" required>
+        </label>
+        <label>퇴사일 <span class="hint">(비우면 재직 중)</span>
+          <input type="date" class="end-date">
+        </label>
+      </div>
+      <label>사용한 스킬 <span class="hint">(쉼표로 구분)</span>
+        <input type="text" class="skills" list="skill-options" placeholder="예: SQL, Python, 데이터 시각화">
+      </label>
+      <label>주요 성과
+        <textarea class="achievements" rows="3" placeholder="예: 퍼널 분석으로 결제 전환율을 12% 개선"></textarea>
+      </label>
+    </fieldset>
+  </template>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
