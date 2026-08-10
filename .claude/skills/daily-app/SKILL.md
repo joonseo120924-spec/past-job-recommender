@@ -48,6 +48,12 @@ RED에 막히면 그 단계만 "차단됨"으로 기록하고 나머지를 진�
 `board.md` · `cycle.md` · `SESSION-LOG.md` 갱신 → **커밋 + 푸시**.
 원격 컨테이너는 커밋하지 않으면 전부 소멸합니다.
 
+### 4-1. `ai-team/STATE.md` 를 다시 쓴다 (생략 불가)
+**한 장짜리 현재 상태**입니다. Windows 로컬에서 Claude Code 를 열면 이 파일이 세션 시작 시 자동으로 읽히고(`.claude/settings.json` 의 `SessionStart` 훅), `team-sync.ps1` 도 이것을 출력합니다. **갱신하지 않으면 다른 기기가 어제 상태를 오늘 상태로 착각합니다.**
+
+매일 다시 쓸 값: 최종 갱신 시각 · 사이클/일차 · 다음 단계 · YELLOW 목록 · 막힌 것 · 본부별 표 · 노션 미동기화 건수.
+기존 형식을 유지하고 값만 바꿉니다. 배경은 `ai-team/local-windows.md`.
+
 ## 5. 마감 — 노션 정리 (생략 불가)
 절차 정본: **`ai-team/notion-sync.md`**
 

@@ -20,7 +20,35 @@
 - **Windows 로컬의 07:07 스케줄은 이 환경에서 끌 수 없음.** 켜져 있으면 하루 두 번 돌고, 서로 다른 작업물(`C:\Users\User\ai-team\` vs 이 저장소)을 건드림 → 사용자 조치 필요
 
 ### 노션 미동기화
-- `ai-team/notion-queue/2026-08-10.md` — 이 세션에서 반영 시도
+- 없음 (`2026-08-10.md` 반영 완료)
+
+---
+
+## 2026-08-10 (2) · Windows 로컬을 07:07 사이클에 연결
+
+**지시 원문**: "너가 매일 아침 7시에 하는거 윈도우 로컬에서도 알았으면 해"
+
+### 설계 — 실행은 한 곳, 열람은 모든 기기
+Windows에서 같은 사이클을 또 돌리면 두 기기가 서로 다른 작업물을 진행해 상태가 갈라집니다.
+그래서 **실행은 원격 컨테이너 07:07 하나로 두고, 저장소를 경유해 Windows가 결과를 받아 보는** 구조로 만들었습니다.
+
+### 한 일
+- `ai-team/STATE.md` 신설 — **한 장짜리 현재 상태.** 사이클이 매일 다시 씀 (`daily-app` 4-1 단계로 규정)
+- `.claude/settings.json` 의 `SessionStart` 훅 — 어느 기기든 Claude Code 를 열면 `STATE.md` 가 자동으로 읽힘
+- `ai-team/scripts/team-sync.ps1` — Windows용. pull → `STATE.md` 출력 → 새 커밋·노션 미동기화 건수 표시. `-Quiet` 은 스케줄러용
+  - UTF-8 BOM + CRLF (Windows PowerShell 5.1 한글 깨짐 방지), `.gitattributes` 로 `*.ps1 eol=crlf` 고정
+  - fetch 실패 시 2·4·8·16초 재시도, fast-forward 불가하면 덮어쓰지 않고 경고만
+- `ai-team/local-windows.md` — 로컬 준비 절차 · 07:07 작업 교체(07:30 수신용) · FocusNoise 산출물 이관 명령 · 충돌 처리
+- `board.md` 에 「기기 분담」 표 추가, 낡은 "자동 실행 동작 안 함" 삭제
+
+### 검증하지 못한 것 (정직하게)
+- **`team-sync.ps1` 을 실행해 보지 못했습니다.** 이 컨테이너에 PowerShell 이 없습니다(`pwsh`·`powershell` 둘 다 없음). 문법 검토만 했습니다
+- `SessionStart` 훅은 Windows 에서 미확인 — 훅 명령이 `cat` 이라 Git Bash 가 필요합니다. 실패해도 `|| true` 로 세션을 막지 않습니다
+
+### 사용자 조치가 필요한 것
+1. Windows 07:07 작업 **중지** (이 환경에서 끌 수 없음)
+2. 저장소를 로컬에 clone → `team-sync.ps1` 1회 실행해 동작 확인
+3. FocusNoise `docs/` `src/` `QA보고서.md` 를 저장소로 이관하면 **Q-001 이 풀리고 다음 07:07 이 ⑤ 품질을 재개**함
 
 ---
 
