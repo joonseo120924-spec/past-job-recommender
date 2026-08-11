@@ -108,8 +108,17 @@ if ($before -and $after -and ($before -ne $after)) {
     Say '  새로 받은 커밋' 'Cyan'
     $logRes = Invoke-Git log --oneline "$before..$after"
     if ($logRes.ExitCode -eq 0) { $logRes.Output | ForEach-Object { Say "    $_" } }
-    $count = (Invoke-Git rev-list --count "$before..$after").Output | Select-Object -First 1
-    Write-Log ("새 커밋 {0}건 수신" -f $count)
+    $cntRes = Invoke-Git rev-list --count "$before..$after"
+    $count  = if ($cntRes.ExitCode -eq 0) {
+        $cntRes.Output | Where-Object { $_ -match '^[0-9]+$' } | Select-Object -First 1
+    } else { $null }
+    if ($null -ne $count) { Write-Log ("새 커밋 {0}건 수신" -f $count) }
+    else { Write-Log '새 커밋 있음 — 건수 확인 실패' }
+} elseif ($null -eq $before -or $null -eq $after) {
+    # Get-Sha 가 실패한 경우. "변경 없음" 과 구별해서 적는다 — 확인 못 한 것을 정상으로 쓰지 않는다
+    Say ''
+    Say '  ⚠️ HEAD 를 확인하지 못해 새 커밋 여부를 알 수 없습니다.' 'Yellow'
+    Write-Log '확인 불가: git rev-parse HEAD 실패 — 새 커밋 여부 미확인'
 } else {
     Say ''
     Say '  새 커밋 없음 — 마지막 사이클 이후 변경 없습니다.' 'DarkGray'
