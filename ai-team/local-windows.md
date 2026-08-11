@@ -33,12 +33,14 @@
 PowerShell에서:
 
 ```powershell
-# 저장소를 로컬에 받는다 (원하는 위치로)
+# 저장소를 로컬에 받는다
 cd C:\Users\User
 git clone https://github.com/joonseo120924-spec/past-job-recommender.git
 cd past-job-recommender
 git checkout claude/notion-ai-team-import-8tlqr8
 ```
+
+⚠️ **다른 위치에 clone 하려면 아래 문서의 `C:\Users\User\past-job-recommender` 를 전부 그 경로로 바꾸십시오.** 특히 작업 스케줄러 등록의 `-File` 경로가 어긋나면 **오류 없이 조용히 안 돌게** 됩니다.
 
 `git` 외에 필요한 것 없습니다. Node·Python 설치 불필요합니다.
 

@@ -33,33 +33,54 @@ function Say([string]$Text, [string]$Color = 'Gray') {
     if (-not $Quiet) { Write-Host $Text -ForegroundColor $Color }
 }
 
+# git 은 정상 동작 중에도 stderr 로 진행 정보를 씁니다. $ErrorActionPreference='Stop' 상태에서
+# 네이티브 stderr 는 Windows PowerShell 5.1 에서 NativeCommandError 로 승격돼 스크립트를 죽입니다.
+# 그래서 git 호출은 전부 이 함수를 통해서만 하고, 성공 여부는 종료 코드로만 판정합니다.
+function Invoke-Git {
+    param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GitArgs)
+
+    $prev = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $output = & git @GitArgs 2>&1 | ForEach-Object { "$_" }
+        $code   = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $prev
+    }
+    [pscustomobject]@{ ExitCode = $code; Output = $output }
+}
+
 Set-Location $RepoDir
 
 # ── 1. pull ────────────────────────────────────────────────────────────────
-$before = (git rev-parse HEAD 2>$null)
+$before = (Invoke-Git rev-parse HEAD).Output | Select-Object -First 1
 
 Say ''
 Say "  가져오는 중 — $Branch" 'DarkGray'
 
+$waits   = @(2, 4, 8, 16)
 $fetchOk = $false
-foreach ($wait in 2, 4, 8, 16) {
-    git fetch origin $Branch 2>&1 | Out-Null
-    if ($LASTEXITCODE -eq 0) { $fetchOk = $true; break }
-    Say "  네트워크 실패, ${wait}초 후 재시도" 'DarkYellow'
-    Start-Sleep -Seconds $wait
+for ($i = 0; $i -lt $waits.Count; $i++) {
+    if ((Invoke-Git fetch origin $Branch).ExitCode -eq 0) { $fetchOk = $true; break }
+    if ($i -lt $waits.Count - 1) {
+        Say ("  네트워크 실패, {0}초 후 재시도" -f $waits[$i]) 'DarkYellow'
+        Start-Sleep -Seconds $waits[$i]
+    }
 }
 
 if (-not $fetchOk) {
     Write-Log '실패: git fetch 안 됨 (네트워크). 마지막으로 받은 상태를 표시합니다.'
 } else {
-    git checkout $Branch 2>&1 | Out-Null
-    git merge --ff-only "origin/$Branch" 2>&1 | Out-Null
-    if ($LASTEXITCODE -ne 0) {
+    $co = Invoke-Git checkout $Branch
+    if ($co.ExitCode -ne 0) {
+        Write-Log ("경고: '{0}' 브랜치로 전환하지 못했습니다 — {1}" -f $Branch, ($co.Output -join ' '))
+    }
+    if ((Invoke-Git merge --ff-only "origin/$Branch").ExitCode -ne 0) {
         Write-Log '경고: fast-forward 불가 — 로컬에 별도 커밋이 있습니다. 수동 확인 필요 (local-windows.md 「충돌하면」 참고)'
     }
 }
 
-$after = (git rev-parse HEAD 2>$null)
+$after = (Invoke-Git rev-parse HEAD).Output | Select-Object -First 1
 
 # ── 2. 현재 상태 한 장 ─────────────────────────────────────────────────────
 $statePath = Join-Path $RepoDir 'ai-team\STATE.md'
@@ -76,8 +97,9 @@ if (Test-Path $statePath) {
 if ($before -and $after -and ($before -ne $after)) {
     Say ''
     Say '  새로 받은 커밋' 'Cyan'
-    git log --oneline "$before..$after" | ForEach-Object { Say "    $_" }
-    Write-Log ("새 커밋 {0}건 수신" -f (git rev-list --count "$before..$after"))
+    (Invoke-Git log --oneline "$before..$after").Output | ForEach-Object { Say "    $_" }
+    $count = (Invoke-Git rev-list --count "$before..$after").Output | Select-Object -First 1
+    Write-Log ("새 커밋 {0}건 수신" -f $count)
 } else {
     Say ''
     Say '  새 커밋 없음 — 마지막 사이클 이후 변경 없습니다.' 'DarkGray'

@@ -21,13 +21,13 @@ echo "$HOME"
 ```bash
 cd "$(git rev-parse --show-toplevel)"
 mkdir -p .claude/agents .claude/skills/meeting-room .claude/skills/daily-app
-mkdir -p ai-team/docs ai-team/apps
+mkdir -p ai-team/apps          # 산출물은 ai-team/apps/<날짜>/ 아래에만. ai-team/docs/ 는 폐기 경로
 # ... 파일 작성 ...
 git add .claude ai-team
 git commit -m "AI 앱 개발팀 복원: 6본부 20명 + 규정 + 스킬 + 상태 파일"
 ```
 `.gitignore` 에 `.claude/` 가 있으면 **제외 규칙을 먼저 풀어야** 합니다.
-**원격 컨테이너에는 로컬 스케줄러가 없어 07:07 자동 실행이 동작하지 않습니다.**
+**원격 컨테이너에는 로컬 스케줄러가 없습니다.** 대신 Claude Routine 이 매일 07:07 KST 에 지정된 대화창을 깨웁니다 — 자동 실행은 **동작합니다**. 결과는 커밋해야만 남습니다.
 
 ## 1. 파일 작성 시 절대 지킬 것
 | 항목 | 이유 |
@@ -46,7 +46,9 @@ git commit -m "AI 앱 개발팀 복원: 6본부 20명 + 규정 + 스킬 + 상태
 for f in .claude/agents/*.md; do head -c3 "$f" | grep -q $'\xef\xbb\xbf' && echo "BOM: $f"; done
 # frontmatter
 for f in .claude/agents/*.md; do [ "$(head -1 "$f")" = "---" ] || echo "BAD: $f"; done
-# 절대경로 잔재 — 0이어야 함
+# 절대경로 잔재 — .claude/ 범위에서 0이어야 함
+# (ai-team/ 에는 원본 소재지를 가리키는 기록용 C:\Users\ 가 정상적으로 존재합니다.
+#  지시·경로 지정에 쓰였다면 지적 대상, 이력 서술이면 무방)
 grep -ro 'C:.Users' .claude/ | wc -l
 # 개수 — 20
 ls .claude/agents/*.md | wc -l
@@ -57,7 +59,7 @@ ls .claude/agents/*.md | wc -l
 2. `.claude/` 에 `team-rules.md` · `team-org.md` · `master-doctrine.md` 생성
 3. `.claude/skills/meeting-room/SKILL.md` · `skills/daily-app/SKILL.md` 생성 (정본 참조형 — D-012)
 4. `ai-team/` 에 `README.md` `SESSION-LOG.md` `cycle.md` `board.md` `approvals.md` `decisions.md` `questions.md` 생성
-5. (Windows 로컬만) 스케줄 작업 등록 — 매일 07:00, 프롬프트는 정본 4개를 읽게 하는 **얇은 참조형**
+5. 정기 실행 등록 — **실행 기기는 하나뿐입니다.** 현재는 원격 컨테이너의 Claude Routine (매일 07:07 KST)이 그 하나입니다. **Windows 로컬에서 같은 사이클을 또 등록하지 마십시오** — 두 기기가 서로 다른 작업물을 진행해 상태가 갈라집니다. Windows 는 결과를 받아 보는 07:30 수신 작업으로 대체합니다 (`ai-team/local-windows.md`). 프롬프트는 정본을 읽게 하는 **얇은 참조형** (D-012, 사본: `ai-team/routine-prompt.md`)
 6. (영속 환경만) 영구 기억 `~/.claude/projects/<프로젝트>/memory/` 에 `MEMORY.md` + 팀 기억 파일 생성
    → **원격 컨테이너에서는 홈이 소멸하므로 만들어도 남지 않습니다**
 7. **`team-master` 감사관을 호출해 복원 결과를 감사** (D-014 3요건 중 ③)
