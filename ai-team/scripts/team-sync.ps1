@@ -50,19 +50,28 @@ function Invoke-Git {
     [pscustomobject]@{ ExitCode = $code; Output = $output }
 }
 
+# Invoke-Git 은 stderr 를 출력에 합칩니다. HEAD SHA 처럼 값 자체가 필요한 곳에서는
+# git 이 경고를 한 줄이라도 내면 SHA 대신 경고문을 집게 되므로, SHA 형식만 통과시킵니다.
+function Get-Sha {
+    $r = Invoke-Git rev-parse HEAD
+    if ($r.ExitCode -ne 0) { return $null }
+    return ($r.Output | Where-Object { $_ -match '^[0-9a-f]{7,40}$' } | Select-Object -First 1)
+}
+
 Set-Location $RepoDir
 
 # ── 1. pull ────────────────────────────────────────────────────────────────
-$before = (Invoke-Git rev-parse HEAD).Output | Select-Object -First 1
+$before = Get-Sha
 
 Say ''
 Say "  가져오는 중 — $Branch" 'DarkGray'
 
-$waits   = @(2, 4, 8, 16)
+# 4회 시도, 사이 대기 3번 (마지막 실패 후에는 기다리지 않는다)
+$waits   = @(2, 4, 8)
 $fetchOk = $false
-for ($i = 0; $i -lt $waits.Count; $i++) {
+for ($i = 0; $i -le $waits.Count; $i++) {
     if ((Invoke-Git fetch origin $Branch).ExitCode -eq 0) { $fetchOk = $true; break }
-    if ($i -lt $waits.Count - 1) {
+    if ($i -lt $waits.Count) {
         Say ("  네트워크 실패, {0}초 후 재시도" -f $waits[$i]) 'DarkYellow'
         Start-Sleep -Seconds $waits[$i]
     }
@@ -80,7 +89,7 @@ if (-not $fetchOk) {
     }
 }
 
-$after = (Invoke-Git rev-parse HEAD).Output | Select-Object -First 1
+$after = Get-Sha
 
 # ── 2. 현재 상태 한 장 ─────────────────────────────────────────────────────
 $statePath = Join-Path $RepoDir 'ai-team\STATE.md'
@@ -97,7 +106,8 @@ if (Test-Path $statePath) {
 if ($before -and $after -and ($before -ne $after)) {
     Say ''
     Say '  새로 받은 커밋' 'Cyan'
-    (Invoke-Git log --oneline "$before..$after").Output | ForEach-Object { Say "    $_" }
+    $logRes = Invoke-Git log --oneline "$before..$after"
+    if ($logRes.ExitCode -eq 0) { $logRes.Output | ForEach-Object { Say "    $_" } }
     $count = (Invoke-Git rev-list --count "$before..$after").Output | Select-Object -First 1
     Write-Log ("새 커밋 {0}건 수신" -f $count)
 } else {
@@ -110,7 +120,7 @@ if ($before -and $after -and ($before -ne $after)) {
 $queueDir = Join-Path $RepoDir 'ai-team\notion-queue'
 if (Test-Path $queueDir) {
     $pending = @(Get-ChildItem $queueDir -Filter '*.md' | Where-Object {
-        (Get-Content $_.FullName -TotalCount 1 -Encoding UTF8) -match '대기'
+        (Get-Content $_.FullName -TotalCount 1 -Encoding UTF8) -match '^\s*상태:\s*대기'
     })
     if ($pending.Count -gt 0) {
         Say ''
