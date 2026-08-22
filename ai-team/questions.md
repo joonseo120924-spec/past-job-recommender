@@ -1013,7 +1013,11 @@ computed: opacity 0 / pointer-events auto / visibility visible / z-index 60
 - **막힌 정도**: **진행 가능** — 접근 가능한 이름은 확보돼 있습니다.
 - 답변(product-planner / design-lead 작성): _(대기)_
 
-### Q-045 [fullstack-dev → tech-lead] `E-001` 의 `slot` 값을 `'S'`(정적 HTML)로 넣었습니다 — 슬롯 분포 검산을 코드가 하게 하려는 것입니다
+## 2026-08-21 · ④ 개발본부 실무(`fullstack-dev`) 코어 구현 중 제기분 — Q-052 ~ Q-058
+
+> **⚠️ 번호 정정 (2026-08-22 · `tech-lead` 통합 시점)**: 이 블록은 원래 **Q-045 ~ Q-051** 로 붙어 있었고, 바로 위 `frontend-dev` 블록의 **Q-045 ~ Q-050 과 6개가 정면 충돌**했습니다. 두 실무자가 **서로를 보지 못한 채 병렬로** 작업하며 둘 다 「최대 번호 Q-044」를 읽고 045 부터 붙였기 때문입니다. **원인은 실무자가 아니라 분할안입니다** — 파트장이 파일 소유는 나눴으나 **`questions.md` 의 번호 대역을 나누지 않았습니다.** 내용은 한 글자도 바꾸지 않고 **번호만 Q-052~Q-058 로 옮겼습니다.** 답변자는 이 번호로 답해 주십시오.
+
+### Q-052 [fullstack-dev → tech-lead] `E-001` 의 `slot` 값을 `'S'`(정적 HTML)로 넣었습니다 — 슬롯 분포 검산을 코드가 하게 하려는 것입니다
 
 - **상황**: 기획서 §6·INT-33 5항이 슬롯 분포를 **T 33 · I 15 · B 15 · 정적 HTML 1 = 64** 로 확정했습니다. 그런데 구조설계 §5-7 은 `JR.err.slot(code)` 의 반환을 **`'T' | 'I' | 'B'`** 로만 적었습니다. `E-001` 을 `'T'` 로 저장하면 코드에서 세었을 때 **T 34 · 정적 0** 이 되어 ② 확정 분포와 어긋나고, 게이트 검산을 사람이 손으로 해야 합니다.
 - **④ 실무 처리**: `MESSAGES['E-001'].slot = 'S'` 로 저장하고, **`JR.err.slot('E-001')` 은 `'T'` 를 반환**하도록 정규화했습니다(표에 없는 코드의 폴백과 같은 규칙). 즉 **런타임 계약은 `'T'|'I'|'B'` 그대로**이고, 분포 검산만 `MESSAGES` 에서 됩니다. 실측으로 확인했습니다 — `slot()` 반환은 T/I/B 3종뿐, `MESSAGES` 계수는 T33·I15·B15·S1.
@@ -1022,7 +1026,7 @@ computed: opacity 0 / pointer-events auto / visibility visible / z-index 60
 - **막힌 정도**: **진행 가능** — 뒤집혀도 `err.js` 한 글자입니다.
 - 답변(tech-lead 작성): _(대기)_
 
-### Q-046 [fullstack-dev → tech-lead · product-planner] `getCategories()` 를 `items` + `categories` **두 키로 함께** 반환했습니다 (Q-042 파생)
+### Q-053 [fullstack-dev → tech-lead · product-planner] `getCategories()` 를 `items` + `categories` **두 키로 함께** 반환했습니다 (Q-042 파생)
 
 - **상황**: 파트장이 분할안 §5-2 에서 「두 경우 모두 **`items`**」로 확정했고 ④ 는 그것을 따랐습니다. 다만 **INT-30 표에는 읽기 전용 모드 반환이 `{categories: []}`** 로 적혀 있고, 두 실무자는 서로의 코드를 볼 수 없습니다. `frontend-dev` 가 INT-30 을 그대로 읽었다면 **오류 없이 조용히 빈 목록을 그립니다** — 파트장이 지목한 바로 그 사고입니다.
 - **④ 실무 처리**: 반환 객체에 **`items` 와 `categories` 를 같은 배열을 가리키는 두 키로** 실었습니다. `items` 가 정본이고 `categories` 는 별칭입니다. 어느 문서를 본 호출부도 빈 목록을 그리지 않습니다. 평상시·읽기 전용 **양쪽 모두 두 키가 나옵니다**(모드에 따라 키가 갈리면 INT-30 이 노린 「분기 없이 그려진다」가 깨지므로).
@@ -1030,7 +1034,7 @@ computed: opacity 0 / pointer-events auto / visibility visible / z-index 60
 - **막힌 정도**: **막히지 않음.**
 - 답변(tech-lead / product-planner 작성): _(대기)_
 
-### Q-047 [fullstack-dev → tech-lead] `boot.js` 가 DOM 을 **3곳** 만집니다 — 분할안 §4-3 은 2곳으로 한정했는데 INT-30(3)이 세 번째를 지시합니다
+### Q-054 [fullstack-dev → tech-lead] `boot.js` 가 DOM 을 **3곳** 만집니다 — 분할안 §4-3 은 2곳으로 한정했는데 INT-30(3)이 세 번째를 지시합니다
 
 - **상황**:
   - 분할안 §4-3: 「`#jr-unsupported`·`#jr-loading` **제거** — `getElementById` + `removeChild` **2줄만** 허용」.
@@ -1042,7 +1046,7 @@ computed: opacity 0 / pointer-events auto / visibility visible / z-index 60
 - **막힌 정도**: **진행 가능.**
 - 답변(tech-lead 작성): _(대기)_
 
-### Q-048 [fullstack-dev → product-planner] `notices` 가 문자열 배열이라 **`E-304 {count}` · `E-203 {percent}` 의 치환값이 전달될 길이 없습니다**
+### Q-055 [fullstack-dev → product-planner] `notices` 가 문자열 배열이라 **`E-304 {count}` · `E-203 {percent}` 의 치환값이 전달될 길이 없습니다**
 
 - **상황**: 구조설계 §5-4-1 은 `init()` 의 `notices` 를 「부팅 중 발생한 E-코드를 발생 순서대로 담은 **배열**(예: `['E-303','E-306']`)」로 확정했습니다. 그런데 부팅 중 발생 가능한 코드 중 **둘은 자리표시자를 갖습니다** — `E-304`(`읽을 수 없어 제외했습니다` 앞의 `{count}`) · `E-203`(`{percent}%`). 코드만 넘기면 `JR.err.format` 이 없는 키를 빈 문자열로 치환하므로 화면에 **「저장된 기록 가운데 건을 읽을 수 없어…」** 가 뜹니다.
 - **④ 실무 처리**: `notices` **계약은 그대로 문자열 배열로 두고**, `init()` 반환 `data` 에 **`noticeParams`** 를 한 키 더 실었습니다 — `{'E-304': {count: 3}}` 형태. `boot.js`(④ 소유)가 `JR.ui.show(code, noticeParams[code])` 로 넘기므로 **`frontend-dev` 코드는 한 줄도 바뀌지 않습니다.** `E-203` 의 `percent` 는 `boot.js` 5단계가 직접 계산해 채웁니다.
@@ -1051,7 +1055,7 @@ computed: opacity 0 / pointer-events auto / visibility visible / z-index 60
 - **막힌 정도**: **진행 가능.**
 - 답변(product-planner 작성): _(대기)_
 
-### Q-049 [fullstack-dev → tech-lead] `visibilitychange`·`pagehide` 시 **초안을 실제로 저장하는 주체가 계약에 없습니다** — 경계에 구멍이 하나 남습니다
+### Q-056 [fullstack-dev → tech-lead] `visibilitychange`·`pagehide` 시 **초안을 실제로 저장하는 주체가 계약에 없습니다** — 경계에 구멍이 하나 남습니다
 
 - **상황**:
   - 구조설계 **§5-9 9단계**: 「`window` 이벤트 등록: `'visibilitychange'`(§6-8-3) · `'pagehide'`(§6-6)」 → **`boot.js`(④ 소유)** 의 일입니다.
@@ -1064,7 +1068,7 @@ computed: opacity 0 / pointer-events auto / visibility visible / z-index 60
 - **막힌 정도**: **진행 가능** — ⓑ 로 정해지면 `boot.js` 한 줄입니다.
 - 답변(tech-lead 작성): _(대기)_
 
-### Q-050 [fullstack-dev → tech-lead] `writeAll` 이 **직렬화에 실패했을 때 돌려줄 코드가 표에 없습니다** — `E-501` 로 처리했습니다
+### Q-057 [fullstack-dev → tech-lead] `writeAll` 이 **직렬화에 실패했을 때 돌려줄 코드가 표에 없습니다** — `E-501` 로 처리했습니다
 
 - **상황**: 구조설계 §5-3 표는 `writeAll(bundle)` 의 실패 반환을 **`E-202` · `E-205`** 두 개로만 적었습니다. 그런데 같은 문서 §3-4 쓰기 순서 2단계는 **「전부 `JSON.stringify` 한다 (여기서 실패해도 저장소 무해)」** 로 실패 가능성을 명시합니다. 그 경우의 코드가 없습니다. `E-402`(`내보낼 파일을 만들지 못했습니다`)는 **내보내기 문구**라 저장 실패 자리에 쓰면 사용자가 다른 기능을 의심합니다.
 - **④ 실무 처리**: **`E-501`**(`처리 중 문제가 생겨 작업을 취소했습니다. 기록은 바뀌지 않았습니다.`)로 반환합니다. §7-5 가 규정한 「예상 못 한 예외」에 해당하고, **문구가 사실과 정확히 일치합니다**(2단계 실패 시 저장소를 건드리지 않았으므로 기록이 바뀌지 않은 것이 맞습니다). 새 코드를 만들지 않았으므로 **총계 64 불변**입니다.
@@ -1072,7 +1076,7 @@ computed: opacity 0 / pointer-events auto / visibility visible / z-index 60
 - **막힌 정도**: **막히지 않음.**
 - 답변(tech-lead 작성): _(대기)_
 
-### Q-051 [fullstack-dev → tech-lead] 실측 #11 재측정 — **1,000건 목표는 넉넉히 통과, 5,000건 단일월 Firefox 는 예산에 근접**합니다
+### Q-058 [fullstack-dev → tech-lead] 실측 #11 재측정 — **1,000건 목표는 넉넉히 통과, 5,000건 단일월 Firefox 는 예산에 근접**합니다
 
 - **상황**: 파트장이 §3-1 에서 설계 알고리즘을 옮겨 측정한 값(Chromium 2.7ms · Firefox 11ms)과 달리, ④ 는 **실제 구현된 `model.js` 전 경로**(§6-3-2 레코드 단위 검증 5,000회 포함)를 측정했습니다. 검증이 들어가면 값이 올라갑니다.
 - **④ 실측 (실제 `file://` · median of 21 · 콜드런 분리)**
