@@ -2,9 +2,19 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
+import pytest
+
 from jarvis.assistant import Assistant
 from jarvis.metrics import MetricsLog
-from jarvis.handlers import run_inbox, run_metrics, run_plan, run_review, run_trends, run_vault
+from jarvis.handlers import (
+    capture_body,
+    run_inbox,
+    run_metrics,
+    run_plan,
+    run_review,
+    run_trends,
+    run_vault,
+)
 from jarvis.vault import Vault
 
 
@@ -65,6 +75,36 @@ def test_vault_search_returns_hits(vault: Vault):
     answer = run_vault(vault, "썸네일 찾아줘", datetime.now())
     assert answer.data["mode"] == "search"
     assert answer.data["results"][0]["id"] == "build-note"
+
+
+@pytest.mark.parametrize(
+    "utterance,expected",
+    [
+        ("기억해 목요일 3시 촬영", "목요일 3시 촬영"),
+        ("메모 썸네일 A안으로 간다", "썸네일 A안으로 간다"),
+        ("저장해줘 링크 하나", "링크 하나"),   # 어미 `줘`가 본문으로 새면 안 됨
+        ("내일 10시 미팅 기억해", "내일 10시 미팅"),  # 뒤에 붙는 명령형
+        ("기억해", ""),                        # 명령은 맞지만 내용이 없음
+        ("썸네일 얘기 어디 적어놨더라", None),   # 과거형 어미 — 저장이 아니라 검색
+        ("작년 기록해둔 자료 찾아줘", None),
+        ("회의록 어디 있더라", None),
+    ],
+)
+def test_capture_body_separates_write_from_read(utterance, expected):
+    assert capture_body(utterance) == expected
+
+
+def test_past_tense_verb_is_searched_not_stored(vault: Vault):
+    """'적어놨더라'는 저장 명령이 아닙니다. 예전엔 '놨더라'를 기억해 버렸습니다."""
+    answer = run_vault(vault, "썸네일 얘기 어디 적어놨더라", datetime.now())
+    assert answer.data["mode"] == "search"
+    assert answer.data["results"][0]["id"] == "build-note"
+
+
+def test_bare_capture_verb_asks_back(vault: Vault):
+    answer = run_vault(vault, "기억해", datetime.now())
+    assert answer.data == {"mode": "capture"}
+    assert "무엇을 기억할까요" in answer.spoken
 
 
 def test_vault_search_miss_is_explicit(vault: Vault):

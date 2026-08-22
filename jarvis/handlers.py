@@ -16,7 +16,14 @@ from jarvis.metrics import LABELS, MetricsLog
 from jarvis.vault import Vault
 
 URGENT = re.compile(r"(오늘|긴급|마감|asap|urgent|!!)", re.IGNORECASE)
-CAPTURE_VERBS = ("기억해", "메모", "적어", "저장해", "기록해")
+
+# "기억해 …" 는 저장, "… 적어놨더라" 는 검색입니다. 명령형 어미는 문장의 맨 앞이나
+# 맨 뒤에만 옵니다. 중간에 낀 "적어"는 대개 과거형 어미의 일부입니다.
+# 어미는 긴 것부터. `해` 를 먼저 두면 "저장해줘"의 "줘"가 본문으로 새어 나갑니다.
+_VERB = r"(?:기억|메모|적|저장|기록)(?:해줘|해둬|해놔|해|어줘|어놔|어둬|어)?"
+CAPTURE_LEADING = re.compile(rf"^\s*{_VERB}\s*[:,]?\s*(?P<body>.+)$")
+CAPTURE_TRAILING = re.compile(rf"^(?P<body>.+?)\s+{_VERB}\s*[.!~]*$")
+CAPTURE_BARE = re.compile(rf"^\s*{_VERB}\s*[.!?~]*$")
 
 
 @dataclass
@@ -26,14 +33,22 @@ class Answer:
     note_id: str | None = None
 
 
-def _strip_capture_verb(text: str) -> str:
-    body = text.strip()
-    for verb in CAPTURE_VERBS:
-        idx = body.find(verb)
-        if idx != -1:
-            body = body[idx + len(verb) :]
-            break
-    return body.lstrip(" :,.").strip()
+def capture_body(text: str) -> str | None:
+    """저장 명령이면 저장할 내용을, 아니면 None 을 돌려줍니다.
+
+    None 은 "이건 검색이다"라는 뜻이고, 빈 문자열은 "저장하라는데 내용이 없다"
+    입니다. 둘을 구분해야 되묻을 수 있습니다.
+    """
+    text = text.strip()
+    if CAPTURE_BARE.match(text):
+        return ""
+    for pattern in (CAPTURE_LEADING, CAPTURE_TRAILING):
+        m = pattern.match(text)
+        if m:
+            body = m.group("body").strip(" :,.")
+            if body:
+                return body
+    return None
 
 
 def _bullets(items: list[str], empty: str = "- 없음") -> list[str]:
@@ -161,8 +176,8 @@ def run_trends(vault: Vault, query: str, now: datetime) -> Answer:
 
 
 def run_vault(vault: Vault, query: str, now: datetime) -> Answer:
-    if any(verb in query for verb in CAPTURE_VERBS):
-        line = _strip_capture_verb(query)
+    line = capture_body(query)
+    if line is not None:
         if not line:
             return Answer("무엇을 기억할까요? 내용을 함께 말해 주세요.", {"mode": "capture"})
         note = vault.append(
