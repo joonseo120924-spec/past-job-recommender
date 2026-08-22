@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import asyncio
+from datetime import datetime
 from typing import Literal
 
 from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from jarvis.config import KINDS
@@ -35,6 +38,10 @@ def _assistant(request: Request):
     return request.app.state.assistant
 
 
+def _bus(request: Request):
+    return request.app.state.bus
+
+
 @router.get("/vitals")
 async def get_vitals(request: Request) -> dict:
     vault = _assistant(request).vault
@@ -53,7 +60,55 @@ async def get_schedule(request: Request) -> dict:
 
 @router.post("/ask")
 async def ask(payload: AskIn, request: Request) -> dict:
-    return _assistant(request).ask(payload.text)
+    # 볼트를 훑는 동기 작업이라 이벤트 루프를 막지 않게 스레드로 넘깁니다.
+    return await asyncio.to_thread(_assistant(request).ask, payload.text)
+
+
+@router.get("/conversation")
+async def conversation(request: Request) -> dict:
+    """오늘 오간 말. 화면을 새로 고쳐도 대화가 이어지도록."""
+    vault = _assistant(request).vault
+    note = vault.get(f"conversation-{datetime.now():%Y-%m-%d}")
+    lines = []
+    if note:
+        for raw in note.body.splitlines():
+            raw = raw.strip()
+            if not raw.startswith("- "):
+                continue
+            stamp, _, rest = raw[2:].partition(" ")
+            question, _, answer = rest.partition(" → ")
+            lines.append(
+                {"at": stamp, "question": question.strip("*"), "answer": answer}
+            )
+    return {"lines": lines[-30:]}
+
+
+@router.get("/stream")
+async def stream(request: Request) -> StreamingResponse:
+    """서버가 먼저 말을 거는 통로 (하루 흐름 알림)."""
+    bus = _bus(request)
+    queue = bus.subscribe()
+
+    async def events():
+        try:
+            yield "retry: 3000\n\n"
+            while True:
+                if await request.is_disconnected():
+                    break
+                try:
+                    line = await asyncio.wait_for(queue.get(), timeout=15)
+                except asyncio.TimeoutError:
+                    yield ": keep-alive\n\n"  # 프록시가 끊지 않도록.
+                    continue
+                yield f"data: {line}\n\n"
+        finally:
+            bus.unsubscribe(queue)
+
+    return StreamingResponse(
+        events(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @router.post("/run/{skill_name}")

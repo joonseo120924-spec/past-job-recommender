@@ -44,6 +44,8 @@ def assistant(vault) -> Assistant:
 
 @pytest.fixture()
 def client(vault):
-    app = create_app(vault_dir=vault.root)
+    # 테스트에서는 하루 흐름이 제멋대로 노트를 만들지 않게 자동 실행을 끕니다.
+    app = create_app(vault_dir=vault.root, autorun=False)
     with TestClient(app) as c:
+        c.jarvis_app = app  # 라우팅/상태 배선을 직접 확인할 때 씁니다.
         yield c

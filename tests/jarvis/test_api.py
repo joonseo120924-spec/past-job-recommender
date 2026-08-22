@@ -78,3 +78,32 @@ def test_metrics_read_and_write(client):
     assert res.status_code == 201
     latest = client.get("/api/metrics").json()["latest"]
     assert latest["views"] == 999  # 같은 날짜는 덮어쓴다
+
+
+def test_conversation_log_is_kept_and_replayed(client):
+    client.post("/api/ask", json={"text": "오늘 지표 어때"})
+    client.post("/api/ask", json={"text": "고마워"})
+    lines = client.get("/api/conversation").json()["lines"]
+    assert [line["question"] for line in lines] == ["오늘 지표 어때", "고마워"]
+    assert "천만에요" in lines[-1]["answer"]
+
+
+def test_repeat_reads_the_previous_answer(client):
+    first = client.post("/api/ask", json={"text": "오늘 흐름 어때"}).json()
+    again = client.post("/api/ask", json={"text": "다시 말해줘"}).json()
+    assert again["spoken"] == first["spoken"]
+    assert again["label"] == "다시 읽기"
+
+
+def test_wake_word_alone_gets_an_acknowledgement(client):
+    assert client.post("/api/ask", json={"text": "자비스"}).json()["spoken"] == "네, 듣고 있습니다."
+
+
+def test_stream_is_registered_as_sse(client):
+    """SSE 본문은 실서버에서 curl 로 확인합니다 — TestClient 는 스트리밍에서 멈춥니다.
+
+    여기서는 경로가 실제로 붙어 있고 이벤트 버스가 앱에 물려 있는지만 봅니다.
+    """
+    paths = set(client.jarvis_app.openapi()["paths"])
+    assert "/api/stream" in paths
+    assert client.jarvis_app.state.bus.listeners == 0

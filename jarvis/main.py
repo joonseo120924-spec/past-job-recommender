@@ -12,14 +12,31 @@ from jarvis import __version__
 from jarvis.api import router
 from jarvis.assistant import Assistant
 from jarvis.config import STATIC_DIR, VAULT_DIR
+from jarvis.events import EventBus
+from jarvis.scheduler import DailyFlow
 from jarvis.vault import Vault
 
 
-def create_app(vault_dir: Path | None = None, skills_dir: Path | None = None) -> FastAPI:
+def create_app(
+    vault_dir: Path | None = None,
+    skills_dir: Path | None = None,
+    *,
+    autorun: bool = True,
+) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        app.state.assistant = Assistant(Vault(vault_dir or VAULT_DIR), skills_dir)
-        yield
+        bus = EventBus()
+        assistant = Assistant(Vault(vault_dir or VAULT_DIR), skills_dir, bus=bus)
+        flow = DailyFlow(assistant, bus)
+        app.state.bus = bus
+        app.state.assistant = assistant
+        app.state.flow = flow
+        if autorun:
+            flow.start()
+        try:
+            yield
+        finally:
+            await flow.stop()
 
     app = FastAPI(
         title="J.A.R.V.I.S.",
