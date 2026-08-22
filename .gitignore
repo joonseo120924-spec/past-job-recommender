@@ -6,3 +6,7 @@ __pycache__/
 venv/
 .env
 .DS_Store
+
+# 볼트: 씨앗 노트만 커밋하고, 실행하며 쌓이는 결과물은 각자 로컬에 둡니다.
+vault/outputs/
+vault/raw/capture-*.md
