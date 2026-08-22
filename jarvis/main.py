@@ -67,6 +67,10 @@ def create_app(
         async def hud() -> FileResponse:
             return FileResponse(STATIC_DIR / "index.html")
 
+        @app.get("/engine", include_in_schema=False)
+        async def engine() -> FileResponse:
+            return FileResponse(STATIC_DIR / "engine.html")
+
     return app
 
 

@@ -70,6 +70,8 @@ body {
   border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px;
   color: var(--muted); font-size: 11px; white-space: nowrap;
 }
+a.chip-link { text-decoration: none; }
+a.chip-link:hover { color: var(--accent); border-color: var(--accent); }
 .chip-wake.on { color: var(--good); border-color: #14503c; }
 .chip-wake.hot { color: var(--bg); background: var(--good); border-color: var(--good); }
 .chip.live { color: var(--good); border-color: #14503c; }

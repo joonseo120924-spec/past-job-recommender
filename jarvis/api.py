@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 
 from jarvis.agents import load_team
 from jarvis.config import KINDS
+from jarvis.graph import build_graph
 from jarvis.metrics import MetricsLog
 from jarvis.notion import NotionClient, NotionError, sync_agent_team
 from jarvis.vitals import snapshot
@@ -215,3 +216,9 @@ async def notion_sync(request: Request) -> dict:
     except NotionError as exc:
         raise HTTPException(502, str(exc)) from exc
     return result
+
+
+@router.get("/graph")
+async def graph(request: Request) -> dict:
+    """OPTIMAL ENGINE — 조직·도구·산출물·볼트를 하나의 그래프로."""
+    return await asyncio.to_thread(build_graph, _assistant(request).vault)

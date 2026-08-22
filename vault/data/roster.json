@@ -1,0 +1,110 @@
+{
+  "source": "노션 · 👥 팀원 20명 역할 명세 (복원용)",
+  "observed_at": "2026-08-09",
+  "url": "https://app.notion.com/p/3b750286df80814b8c9feb6ed22f7dce",
+  "humans": [
+    { "id": "master", "name": "마스터", "role": "총괄 · 유일한 배정권자", "note": "파일을 직접 열어 확인해야 완료로 인정" },
+    { "id": "user", "name": "사용자", "role": "방향 결정 · RED 승인", "note": "차단 5건은 이 사람의 지시를 기다리는 중" }
+  ],
+  "divisions": [
+    { "id": "audit", "no": "🎖️", "name": "감사실", "does": "마스터까지 감시", "lead": "team-master" },
+    { "id": "strategy", "no": "①", "name": "전략", "does": "뭘 만들지 정한다", "lead": "strategy-lead" },
+    { "id": "product", "no": "②", "name": "프로덕트", "does": "질문 없이 만들 수 있게 설계", "lead": "product-planner" },
+    { "id": "design", "no": "③", "name": "디자인", "does": "어떻게 보이는지 + 접근성", "lead": "design-lead" },
+    { "id": "dev", "no": "④", "name": "개발", "does": "실제로 돌아가는 코드", "lead": "tech-lead" },
+    { "id": "qa", "no": "⑤", "name": "품질", "does": "가장 무거운 권한", "lead": "qa-lead" },
+    { "id": "gtm", "no": "⑥", "name": "출시운영", "does": "복붙만 하면 되게", "lead": "gtm-lead" }
+  ],
+  "pipeline": [
+    ["strategy", "product", "인수인계 01"],
+    ["product", "design", "인수인계 02"],
+    ["design", "dev", "인수인계 03"],
+    ["dev", "qa", "인수인계 04"],
+    ["qa", "gtm", "품질 승인"],
+    ["qa", "dev", "오류 있으면 되돌림"]
+  ],
+  "agents": [
+    { "id": "team-master", "division": "audit", "lead": true, "model": "opus",
+      "role": "독립 감사관 — 판정 근거를 파일 경로:줄번호로 제시",
+      "tools": ["전체 상속"], "outputs": ["감사보고서"] },
+
+    { "id": "strategy-lead", "division": "strategy", "lead": true, "model": "sonnet",
+      "role": "조사 분배 → 3인 종합 → 아이디어 승인. 직접 조사하지 않는다",
+      "tools": ["Read", "Write"], "outputs": ["docs/시장분석.md", "handoff/01-전략.md"] },
+    { "id": "market-analyst", "division": "strategy", "model": "sonnet",
+      "role": "시장 규모·트렌드. 못 찾은 수치는 '추정치 — 미검증'",
+      "tools": ["WebSearch", "WebFetch", "Read", "Write", "Glob", "Grep"], "outputs": ["docs/전략-시장.md"] },
+    { "id": "competitor-analyst", "division": "strategy", "model": "sonnet",
+      "role": "경쟁 앱 기능·가격·페이월 위치·약점",
+      "tools": ["WebSearch", "WebFetch", "Read", "Write", "Glob", "Grep"], "outputs": ["docs/전략-경쟁.md"] },
+    { "id": "user-researcher", "division": "strategy", "model": "sonnet",
+      "role": "리뷰·커뮤니티의 실제 불편. 원문 짧게 인용, 개인정보 전재 금지",
+      "tools": ["WebSearch", "WebFetch", "Read", "Write", "Glob", "Grep"], "outputs": ["docs/전략-사용자.md"] },
+
+    { "id": "product-planner", "division": "product", "lead": true, "model": "opus",
+      "role": "기능 정의 → 분배 → 통합 → 설계 승인. 없는 걸 설계하지 않는다",
+      "tools": ["Read", "Write", "Edit", "Glob", "Grep", "WebSearch", "WebFetch"],
+      "outputs": ["docs/기획서.md", "handoff/02-기획.md"] },
+    { "id": "ux-designer", "division": "product", "model": "sonnet",
+      "role": "무엇이 어디 있고 뭘 하는가. 색상값·px·ms는 지정하지 않는다",
+      "tools": ["Read", "Write", "Edit", "Glob", "Grep"], "outputs": ["docs/기획-화면설계.md"] },
+    { "id": "system-architect", "division": "product", "model": "opus",
+      "role": "데이터 구조 · 인터페이스 · 예외 정의(E-코드)와 실제 한국어 문구",
+      "tools": ["Read", "Write", "Edit", "Glob", "Grep"], "outputs": ["docs/기획-구조설계.md"] },
+
+    { "id": "design-lead", "division": "design", "lead": true, "model": "opus",
+      "role": "접근성 검증 → 디자인 승인. 대비비는 어림하지 말고 실제 계산",
+      "tools": ["전체 상속"], "outputs": ["docs/디자인가이드.md", "handoff/03-디자인.md"] },
+    { "id": "ui-designer", "division": "design", "model": "sonnet",
+      "role": "컬러 토큰·타이포·간격·모션. 시스템 폰트만, 외부 CDN 금지",
+      "tools": ["전체 상속"], "outputs": ["docs/디자인-비주얼.md"] },
+    { "id": "brand-designer", "division": "design", "model": "sonnet",
+      "role": "앱 아이콘 SVG·파비콘. 16px로 줄여도 알아볼 수 있게",
+      "tools": ["전체 상속"], "outputs": ["docs/디자인-브랜드.md", "src/icons/"] },
+
+    { "id": "tech-lead", "division": "dev", "lead": true, "model": "opus",
+      "role": "착수 게이트 8항목 심사 → 파일 단위 분할 → 통합 승인",
+      "tools": ["전체 상속"], "outputs": ["docs/개발-분할안.md", "handoff/04-개발.md"] },
+    { "id": "frontend-dev", "division": "dev", "model": "opus",
+      "role": "HTML·CSS·렌더링. 디자인가이드의 CSS 변수를 그대로 쓴다",
+      "tools": ["전체 상속"], "outputs": ["src/ 화면"] },
+    { "id": "fullstack-dev", "division": "dev", "model": "opus",
+      "role": "코어 로직·데이터·상태·저장소. 화면을 그리지 않는다",
+      "tools": ["전체 상속"], "outputs": ["src/ 로직"] },
+
+    { "id": "qa-lead", "division": "qa", "lead": true, "model": "opus",
+      "role": "남은 오류가 1개라도 있으면 승인하지 않는다",
+      "tools": ["전체 상속"], "outputs": ["docs/QA보고서.md", "handoff/05-QA.md"] },
+    { "id": "functional-tester", "division": "qa", "model": "opus",
+      "role": "버튼·빈값·1000자·이모지·경계값. 최소 20회 사이클",
+      "tools": ["전체 상속"], "outputs": ["docs/QA-기능.md"] },
+    { "id": "security-tester", "division": "qa", "model": "opus",
+      "role": "XSS 실제 주입·프로토타입 오염·외부 요청 실계측. 읽고 '안전해 보인다' 금지",
+      "tools": ["전체 상속"], "outputs": ["docs/QA-보안.md"] },
+
+    { "id": "gtm-lead", "division": "gtm", "lead": true, "model": "sonnet",
+      "role": "통합·검수 → 출시 준비 승인. 품질 승인 확인 후 착수",
+      "tools": ["Read", "Write", "Edit", "Bash", "PowerShell", "WebSearch"],
+      "outputs": ["handoff/06-출시운영.md"] },
+    { "id": "store-release", "division": "gtm", "model": "sonnet",
+      "role": "스토어 제출값. 플레이스홀더 금지, 글자 수를 실제로 센다",
+      "tools": ["Read", "Write", "Edit", "Bash", "PowerShell"],
+      "outputs": ["docs/제출-AppStore.md", "docs/제출-GooglePlay.md"] },
+    { "id": "ops-manager", "division": "gtm", "model": "sonnet",
+      "role": "크래시·리뷰·성능 모니터링. 데이터 없이 '정상'이라 쓰지 않는다",
+      "tools": ["Read", "Write", "Edit", "Bash", "PowerShell"], "outputs": ["docs/운영점검.md"] }
+  ],
+  "pillars": [
+    { "id": "team-rules", "name": ".claude/team-rules.md", "note": "협업 규정 정본" },
+    { "id": "team-org", "name": ".claude/team-org.md", "note": "조직 정본 — 70행 서술 오류로 차단 중" },
+    { "id": "master-doctrine", "name": ".claude/master-doctrine.md", "note": "마스터 판단 기준 (GREEN/YELLOW/RED)" }
+  ],
+  "state_files": [
+    { "id": "cycle", "name": "ai-team/cycle.md", "note": "사이클·일차·단계 진행표" },
+    { "id": "board", "name": "ai-team/board.md", "note": "실시간 작업 현황판" },
+    { "id": "approvals", "name": "ai-team/approvals.md", "note": "승인·반려 기록" },
+    { "id": "decisions", "name": "ai-team/decisions.md", "note": "의사결정 D-001~D-021" },
+    { "id": "questions", "name": "ai-team/questions.md", "note": "팀원 간 질문 Q-001~" },
+    { "id": "state", "name": "ai-team/STATE.md", "note": "한 장짜리 현재 상태" }
+  ]
+}
