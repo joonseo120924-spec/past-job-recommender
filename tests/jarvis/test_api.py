@@ -14,8 +14,9 @@ def test_vitals_shape(client):
     assert "cpu" in body["system"]
 
 
-def test_skills_endpoint_lists_five(client):
-    assert len(client.get("/api/skills").json()["skills"]) == 5
+def test_skills_endpoint_lists_every_skill_folder(client):
+    names = {s["name"] for s in client.get("/api/skills").json()["skills"]}
+    assert names == {"metrics", "inbox", "trends", "plan", "vault", "agents", "status"}
 
 
 def test_schedule_endpoint(client):
@@ -107,3 +108,45 @@ def test_stream_is_registered_as_sse(client):
     paths = set(client.jarvis_app.openapi()["paths"])
     assert "/api/stream" in paths
     assert client.jarvis_app.state.bus.listeners == 0
+
+
+def test_agents_endpoint_returns_team_status(client, vault):
+    import json
+
+    (vault.root / "data" / "agent-team.json").write_text(
+        json.dumps(
+            {
+                "observed_at": "2026-08-15",
+                "team": {"name": "AI 앱 개발팀", "members": 20, "divisions": 6},
+                "cycle": {"number": 2, "day": 1, "stage": "② 프로덕트"},
+                "apps": [{"name": "가계부", "state": "in_progress"}],
+                "blockers": ["team-org.md:70"],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    body = client.get("/api/agents").json()
+    assert body["cycle"]["number"] == 2
+    assert body["blockers"] == ["team-org.md:70"]
+    assert "사이클 2" in body["headline"]
+    assert body["stale_days"] >= 0
+
+
+def test_agents_endpoint_without_snapshot(client):
+    body = client.get("/api/agents").json()
+    assert body["apps"] == []
+    assert "없습니다" in body["headline"]
+
+
+def test_notion_sync_without_token_is_not_an_error(client, monkeypatch):
+    monkeypatch.delenv("NOTION_TOKEN", raising=False)
+    body = client.post("/api/notion/sync").json()
+    assert body["synced"] is False
+    assert "NOTION_TOKEN" in body["reason"]
+
+
+def test_ask_reports_status_out_loud(client):
+    body = client.post("/api/ask", json={"text": "지금 상황 보고해"}).json()
+    assert body["skill"] == "status"
+    assert "현재 상황입니다" in body["spoken"]

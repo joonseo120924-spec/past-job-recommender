@@ -11,9 +11,11 @@ from collections import Counter
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 
+from jarvis.agents import load_team
 from jarvis.config import DAILY_FLOW
 from jarvis.metrics import LABELS, MetricsLog
 from jarvis.vault import Vault
+from jarvis.vitals import snapshot
 
 URGENT = re.compile(r"(오늘|긴급|마감|asap|urgent|!!)", re.IGNORECASE)
 
@@ -297,3 +299,61 @@ HANDLERS = {
     "inbox": run_inbox,
     "review": run_review,
 }
+
+
+# ------------------------------------------------------------------ agents
+
+
+def run_agents(vault: Vault, query: str, now: datetime) -> Answer:
+    """노션의 AI 앱 개발팀 현황을 읽어 보고합니다."""
+    team = load_team(vault)
+    data = dict(team.data)
+    data["headline"] = team.headline()
+    data["stale_days"] = team.staleness_days
+    return Answer(team.report(), data)
+
+
+# ------------------------------------------------------------------ status
+
+
+def run_status(vault: Vault, query: str, now: datetime) -> Answer:
+    """현재 상황 보고 — 시스템·볼트·일정·지표·할 일·에이전트팀을 한 번에."""
+    system = snapshot(vault.root)
+    stats = vault.stats()
+    todos = vault.open_todos()
+    team = load_team(vault)
+
+    metrics = run_metrics(vault, query, now)
+    schedule_done = 0
+    today = f"{now:%Y-%m-%d}"
+    outputs = {n.id for n in vault.notes("outputs")}
+    for _, skill, _ in DAILY_FLOW:
+        marker = {"inbox": "brief", "plan": "plan", "review": "review"}.get(skill)
+        if marker and f"{marker}-{today}" in outputs:
+            schedule_done += 1
+
+    cpu = f"{system['cpu']}%" if system.get("cpu") is not None else "측정 불가"
+    ram = f"{system['ram']}%" if system.get("ram") is not None else "측정 불가"
+    spoken = (
+        f"{now:%H시 %M분} 현재 상황입니다. "
+        f"시스템은 CPU {cpu}, 메모리 {ram}. "
+        f"볼트에 노트 {stats['total']}건, 링크율 {stats['sync']}퍼센트. "
+        f"오늘 흐름 {len(DAILY_FLOW)}개 중 {schedule_done}개 실행했고, 열린 할 일은 {len(todos)}건입니다. "
+        f"{metrics.spoken} "
+        f"에이전트팀은 {team.headline()}"
+    )
+    return Answer(
+        spoken.strip(),
+        {
+            "system": system,
+            "vault": stats,
+            "todos": len(todos),
+            "flow_done": schedule_done,
+            "metrics": metrics.data,
+            "agents": {"headline": team.headline(), "blockers": team.data.get("blockers", [])},
+        },
+    )
+
+
+HANDLERS["agents"] = run_agents
+HANDLERS["status"] = run_status

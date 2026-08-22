@@ -49,3 +49,33 @@ def client(vault):
     with TestClient(app) as c:
         c.jarvis_app = app  # 라우팅/상태 배선을 직접 확인할 때 씁니다.
         yield c
+
+
+@pytest.fixture()
+def team_vault(vault):
+    """에이전트팀 스냅샷이 들어 있는 볼트."""
+    import json
+
+    (vault.root / "data" / "agent-team.json").write_text(
+        json.dumps(
+            {
+                "observed_at": "2026-08-15",
+                "team": {"name": "AI 앱 개발팀", "members": 20, "divisions": 6},
+                "cycle": {"number": 2, "day": 1, "stage": "② 프로덕트", "state": "구조설계 미완"},
+                "apps": [
+                    {"name": "FocusNoise", "cycle": 1, "state": "frozen", "note": "동결"},
+                    {"name": "가계부", "cycle": 2, "state": "in_progress", "note": "89점 승인"},
+                ],
+                "audit": {"label": "⚠️ 3차 조건부 승인", "critical": 0, "major": 3},
+                "blockers": ["team-org.md:70 서술 오류", "산출 경로 접두사 없음"],
+                "next": ["GitHub 반영 확인"],
+                "sources": [
+                    {"id": "3b750286-df80-8188-b56b-e24bf6d49c40", "title": "팀 홈",
+                     "note_id": "notion-team-home", "url": "https://example.notion/1"}
+                ],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    return vault

@@ -88,6 +88,38 @@ async function refreshDeck() {
   );
 }
 
+async function refreshAgents() {
+  try {
+    const team = await api("/api/agents");
+    if (!team.apps.length && !team.cycle.number) {
+      $("team-body").innerHTML =
+        `<p class="muted small">노션 스냅샷이 없습니다. <code>POST /api/notion/sync</code> 로 가져오세요.</p>`;
+      return;
+    }
+    const apps = team.apps
+      .map((app) => `<li class="${escapeHtml(app.state || "")}"><i class="dot"></i>
+          <span><b>${escapeHtml(app.name)}</b> <em>${escapeHtml(app.note || "")}</em></span></li>`)
+      .join("");
+    const blockers = team.blockers
+      .map((b) => `<li>${escapeHtml(b)}</li>`)
+      .join("");
+    $("team-body").innerHTML = `
+      <p class="team-cycle"><b>사이클 ${escapeHtml(team.cycle.number ?? "?")}</b>
+        <span>${escapeHtml(team.cycle.day ?? "?")}일차 · ${escapeHtml(team.cycle.stage || "")}</span></p>
+      <ul class="team-apps">${apps}</ul>
+      ${team.audit && team.audit.label
+        ? `<div class="team-audit"><span>감사관</span><b>${escapeHtml(team.audit.label)}</b>
+             <span>치명 ${team.audit.critical ?? 0} · 중대 ${team.audit.major ?? 0}</span></div>`
+        : ""}
+      ${blockers ? `<ul class="team-block">${blockers}</ul>` : ""}
+      ${team.stale_days > 1
+        ? `<p class="team-stale">${escapeHtml(team.observed_at)} 기준 · ${team.stale_days}일 지남</p>`
+        : ""}`;
+  } catch (err) {
+    $("team-body").innerHTML = `<p class="muted small">에이전트팀 상태를 읽지 못했습니다.</p>`;
+  }
+}
+
 /* 대화 로그는 이 배열 하나가 진실입니다. 부팅 때 서버에서 한 번 읽고, 그 뒤로는
    덧붙이기만 합니다 — 다시 읽어 오면 방금 도착한 자동 실행 항목을 덮어씁니다. */
 let logLines = [];
@@ -143,6 +175,7 @@ function present(result, { fromFlow = false } = {}) {
   refreshNotes();
   refreshSchedule();
   refreshVitals();
+  refreshAgents();
 }
 
 async function ask(text) {
@@ -543,6 +576,7 @@ tickClock();
 setInterval(tickClock, 1000);
 refreshDeck();
 refreshVitals();
+refreshAgents();
 refreshSchedule();
 refreshNotes();
 setInterval(refreshVitals, 5000);

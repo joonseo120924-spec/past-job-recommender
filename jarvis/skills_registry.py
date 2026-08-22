@@ -77,15 +77,18 @@ def route(text: str, skills: list[Skill]) -> Match:
 
     best: tuple[float, Skill, str] | None = None
     for skill in skills:
-        score = 0.0
-        hit: list[str] = []
+        # 가장 구체적인 트리거 하나가 점수를 정합니다. 짧은 트리거를 여러 개 더하면
+        # "에이전트팀 상황 보고" 같은 말에서 곁가지(상황·보고)가 본체(에이전트)를
+        # 이겨 버립니다. 추가로 걸린 트리거는 소수점 가산만 합니다.
+        matched: list[tuple[float, str]] = []
         for trigger in skill.triggers:
             t = unicodedata.normalize("NFKC", trigger).lower()
             if t and t in normalized:
-                score += 1.0 + 0.1 * len(t)
-                hit.append(trigger)
-        if not score:
+                matched.append((1.0 + 0.3 * len(t), trigger))
+        if not matched:
             continue
+        score = max(weight for weight, _ in matched) + 0.1 * (len(matched) - 1)
+        hit = [trigger for _, trigger in matched]
         score += skill.priority / 100
         if best is None or score > best[0]:
             best = (score, skill, "트리거 일치: " + ", ".join(hit))

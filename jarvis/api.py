@@ -8,8 +8,10 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
+from jarvis.agents import load_team
 from jarvis.config import KINDS
 from jarvis.metrics import MetricsLog
+from jarvis.notion import NotionClient, NotionError, sync_agent_team
 from jarvis.vitals import snapshot
 
 router = APIRouter(prefix="/api")
@@ -183,3 +185,33 @@ async def write_metrics(payload: MetricsIn, request: Request) -> dict:
     log = MetricsLog(_assistant(request).vault.root)
     row = log.record(payload.model_dump(exclude={"date"}), on=payload.date)
     return {"recorded": row}
+
+
+@router.get("/agents")
+async def agents(request: Request) -> dict:
+    """노션 AI 앱 개발팀 현황 (볼트 스냅샷 기준)."""
+    team = load_team(_assistant(request).vault)
+    return {
+        "team": team.data.get("team", {}),
+        "cycle": team.data.get("cycle", {}),
+        "apps": team.data.get("apps", []),
+        "audit": team.data.get("audit", {}),
+        "blockers": team.data.get("blockers", []),
+        "next": team.data.get("next", []),
+        "divisions": team.data.get("divisions", []),
+        "headline": team.headline(),
+        "observed_at": team.data.get("observed_at"),
+        "stale_days": team.staleness_days,
+    }
+
+
+@router.post("/notion/sync")
+async def notion_sync(request: Request) -> dict:
+    """노션 정본을 볼트 wiki/ 로 다시 끌어옵니다 (NOTION_TOKEN 필요)."""
+    vault = _assistant(request).vault
+    client = NotionClient()
+    try:
+        result = await asyncio.to_thread(sync_agent_team, vault, client)
+    except NotionError as exc:
+        raise HTTPException(502, str(exc)) from exc
+    return result

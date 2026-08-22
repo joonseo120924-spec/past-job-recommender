@@ -10,8 +10,10 @@ def skills():
     return load_skills()
 
 
-def test_five_skills_are_loaded(skills):
-    assert {s.name for s in skills} == {"metrics", "inbox", "trends", "plan", "vault"}
+def test_all_skills_are_loaded(skills):
+    assert {s.name for s in skills} == {
+        "metrics", "inbox", "trends", "plan", "vault", "agents", "status",
+    }
 
 
 @pytest.mark.parametrize(
@@ -23,6 +25,11 @@ def test_five_skills_are_loaded(skills):
         ("오늘 할 일 우선순위 정리해줘", "plan"),
         ("요즘 흐름 스캔해봐", "trends"),
         ("기억해 3시에 콜 있음", "vault"),
+        ("지금 상황 보고해", "status"),
+        ("에이전트팀 어떻게 돼", "agents"),
+        # 곁가지(상황·보고)가 본체(에이전트)를 이기면 안 됩니다.
+        ("에이전트팀 상황 보고해", "agents"),
+        ("노션 팀 현황 알려줘", "agents"),
     ],
 )
 def test_intent_routes_to_expected_skill(skills, utterance, expected):
