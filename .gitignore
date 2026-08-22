@@ -9,3 +9,8 @@ venv/
 
 # 로컬 동기화 스크립트 로그 (기기별)
 ai-team/.local-sync.log
+
+# QA 재현 스크립트가 남기는 스크린샷 (CWD 의존, 저장소에 넣지 않음)
+ai-team/apps/*/shots/
+ai-team/apps/*/verify/shots/
+shots/
