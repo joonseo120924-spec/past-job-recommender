@@ -1,0 +1,81 @@
+from __future__ import annotations
+
+from datetime import datetime, timedelta
+
+import pytest
+from fastapi.testclient import TestClient
+
+from jarvis.assistant import Assistant
+from jarvis.main import create_app
+from jarvis.metrics import MetricsLog
+from jarvis.vault import Vault
+
+
+@pytest.fixture()
+def vault(tmp_path) -> Vault:
+    v = Vault(tmp_path / "vault")
+    v.write(
+        title="빌드 노트",
+        body="- [ ] 마감 오늘까지 썸네일\n- [ ] 데모 영상 편집\n- [ ] 릴리즈 노트\n- [ ] 색 정리\n\n[[architecture]]",
+        kind="raw",
+        type="capture",
+        tags=["jarvis", "build"],
+        note_id="build-note",
+    )
+    v.write(
+        title="architecture",
+        body="네 개의 부품만 있으면 된다.",
+        kind="wiki",
+        type="wiki",
+        tags=["jarvis"],
+        note_id="architecture",
+    )
+    log = MetricsLog(v.root)
+    today = datetime.now().date()
+    log.record({"views": 100, "subscribers": 10, "followers": 20}, on=str(today - timedelta(days=1)))
+    log.record({"views": 150, "subscribers": 12, "followers": 19}, on=str(today))
+    return v
+
+
+@pytest.fixture()
+def assistant(vault) -> Assistant:
+    return Assistant(vault)
+
+
+@pytest.fixture()
+def client(vault):
+    # 테스트에서는 하루 흐름이 제멋대로 노트를 만들지 않게 자동 실행을 끕니다.
+    app = create_app(vault_dir=vault.root, autorun=False)
+    with TestClient(app) as c:
+        c.jarvis_app = app  # 라우팅/상태 배선을 직접 확인할 때 씁니다.
+        yield c
+
+
+@pytest.fixture()
+def team_vault(vault):
+    """에이전트팀 스냅샷이 들어 있는 볼트."""
+    import json
+
+    (vault.root / "data" / "agent-team.json").write_text(
+        json.dumps(
+            {
+                "observed_at": "2026-08-15",
+                "team": {"name": "AI 앱 개발팀", "members": 20, "divisions": 6},
+                "cycle": {"number": 2, "day": 1, "stage": "② 프로덕트", "state": "구조설계 미완"},
+                "apps": [
+                    {"name": "FocusNoise", "cycle": 1, "state": "frozen", "note": "동결"},
+                    {"name": "가계부", "cycle": 2, "state": "in_progress", "note": "89점 승인"},
+                ],
+                "audit": {"label": "⚠️ 3차 조건부 승인", "critical": 0, "major": 3},
+                "blockers": ["team-org.md:70 서술 오류", "산출 경로 접두사 없음"],
+                "next": ["GitHub 반영 확인"],
+                "sources": [
+                    {"id": "3b750286-df80-8188-b56b-e24bf6d49c40", "title": "팀 홈",
+                     "note_id": "notion-team-home", "url": "https://example.notion/1"}
+                ],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    return vault

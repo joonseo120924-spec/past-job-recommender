@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>한달정리</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2016%2016%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%2216%22%20height%3D%2216%22%20rx%3D%223%22%20fill%3D%22%230B6B5B%22%2F%3E%3Crect%20x%3D%223%22%20y%3D%226%22%20width%3D%2210%22%20height%3D%222%22%20rx%3D%221%22%20fill%3D%22%23FFFFFF%22%2F%3E%3Crect%20x%3D%223%22%20y%3D%229%22%20width%3D%226%22%20height%3D%222%22%20rx%3D%221%22%20fill%3D%22%23FFFFFF%22%2F%3E%3C%2Fsvg%3E">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body data-screen="s01">
+
+<!-- INT-14 정적 3요소 — 문구 창작 금지 -->
+<noscript><div class="jr-noscript">자바스크립트가 꺼져 있어 앱을 사용할 수 없습니다. 브라우저 설정에서 자바스크립트를 켜고 새로고침해 주세요.</div></noscript>
+<div id="jr-unsupported">이 브라우저에서는 앱을 사용할 수 없습니다. 크롬·엣지·사파리·파이어폭스의 최신 버전에서 열어 주세요.</div>
+<div id="jr-loading">불러오는 중</div>
+
+<!-- 배너는 <body> 직계 자식으로 JS 가 이 주석 자리에 삽입합니다 (§4-11 · Q-030) -->
+
+<!-- INT-30 3) — 화면 4개는 정적 HTML. 부팅 전에는 #jr-app 이 hidden -->
+<div id="jr-app" hidden>
+
+  <!-- ══════════════════ S-01 홈 ══════════════════ -->
+  <main class="jr-main" id="jr-screen-s01">
+    <h1 class="jr-app-title">한달정리</h1>
+
+    <div class="jr-month-bar">
+      <button type="button" class="jr-btn jr-btn--ghost" id="jr-s01-prev">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" fill="none" aria-hidden="true" focusable="false">
+          <path d="M15 6l-6 6 6 6"/></svg>
+        <span>이전 달</span>
+      </button>
+      <span class="jr-month-label" id="jr-s01-month"></span>
+      <button type="button" class="jr-btn jr-btn--ghost" id="jr-s01-next">
+        <span>다음 달</span>
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" fill="none" aria-hidden="true" focusable="false">
+          <path d="M9 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+
+    <div class="jr-card" id="jr-s01-card">
+      <p class="jr-card__label">이 달 총 지출</p>
+      <p class="jr-card__amount" id="jr-s01-total"></p>
+    </div>
+
+    <div class="jr-stack-16">
+      <button type="button" class="jr-btn jr-btn--primary jr-btn--block" id="jr-s01-add">+ 지출 추가</button>
+    </div>
+
+    <div class="jr-expense-list" id="jr-s01-list"></div>
+  </main>
+
+  <!-- ══════════════════ S-02 입력 ══════════════════ -->
+  <main class="jr-main" id="jr-screen-s02" hidden>
+    <div class="jr-s02-head">
+      <h1 class="jr-screen-title" id="jr-s02-title">지출 추가</h1>
+      <button type="button" class="jr-btn jr-btn--secondary" id="jr-s02-cancel">취소</button>
+    </div>
+
+    <div class="jr-field jr-field--date">
+      <label class="jr-field__label" for="jr-date">날짜</label>
+      <input id="jr-date" class="jr-input jr-input--date" type="date" aria-describedby="jr-date-hint">
+      <p id="jr-date-hint" class="jr-slot jr-slot--neutral"></p>
+    </div>
+
+    <div class="jr-field jr-field--amount">
+      <label class="jr-field__label" for="jr-amount">금액</label>
+      <div class="jr-amount-input">
+        <input id="jr-amount" class="jr-input jr-input--amount" type="text" inputmode="numeric"
+               autocomplete="off" placeholder="0" aria-describedby="jr-amount-hint">
+        <span class="jr-amount-input__suffix" aria-hidden="true">원</span>
+      </div>
+      <p id="jr-amount-hint" class="jr-slot jr-slot--neutral">1원 ~ 999,999,999원까지 입력할 수 있습니다.</p>
+    </div>
+
+    <div class="jr-field jr-field--category">
+      <span class="jr-field__label" id="jr-cat-label">카테고리</span>
+      <div class="jr-chip-group" id="jr-cat-group" role="radiogroup" aria-labelledby="jr-cat-label" aria-describedby="jr-cat-hint"></div>
+      <p class="jr-cat-empty" id="jr-cat-empty" hidden>설정에서 카테고리를 먼저 추가해 주세요.</p>
+      <p id="jr-cat-hint" class="jr-slot jr-slot--empty"></p>
+    </div>
+
+    <div class="jr-field jr-field--memo">
+      <label class="jr-field__label" for="jr-memo">메모 (선택)</label>
+      <textarea id="jr-memo" class="jr-textarea" maxlength="100" placeholder="메모를 남겨보세요"
+                aria-describedby="jr-memo-counter"></textarea>
+      <div class="jr-field__meta">
+        <span class="jr-field__counter" id="jr-memo-counter">0/100</span>
+      </div>
+    </div>
+
+    <div class="jr-stack-24">
+      <button type="button" class="jr-btn jr-btn--primary jr-btn--block" id="jr-s02-save">저장</button>
+    </div>
+    <div class="jr-stack-16" id="jr-s02-delete-slot"></div>
+  </main>
+
+  <!-- ══════════════════ S-03 통계 ══════════════════ -->
+  <main class="jr-main" id="jr-screen-s03" hidden>
+    <div class="jr-month-bar">
+      <button type="button" class="jr-btn jr-btn--ghost" id="jr-s03-prev">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" fill="none" aria-hidden="true" focusable="false">
+          <path d="M15 6l-6 6 6 6"/></svg>
+        <span>이전 달</span>
+      </button>
+      <span class="jr-month-label" id="jr-s03-month"></span>
+      <button type="button" class="jr-btn jr-btn--ghost" id="jr-s03-next">
+        <span>다음 달</span>
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" fill="none" aria-hidden="true" focusable="false">
+          <path d="M9 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+
+    <div class="jr-card">
+      <p class="jr-card__label">이 달 총 지출</p>
+      <p class="jr-card__amount" id="jr-s03-total"></p>
+      <p class="jr-card__count" id="jr-s03-count"></p>
+    </div>
+
+    <div class="jr-stat-list" id="jr-s03-list"></div>
+  </main>
+
+  <!-- ══════════════════ S-04 설정 ══════════════════ -->
+  <main class="jr-main" id="jr-screen-s04" hidden>
+    <h2 class="jr-section-title" id="jr-s04-cat-title" tabindex="-1">카테고리 관리</h2>
+    <div id="jr-s04-cat-list"></div>
+    <p class="jr-slot jr-slot--empty" id="jr-s04-cat-shared-hint"></p>
+
+    <div class="jr-add-row">
+      <div class="jr-add-row__input">
+        <input id="jr-cat-new" class="jr-input" type="text" autocomplete="off"
+               placeholder="새 카테고리 이름" aria-label="새 카테고리 이름"
+               aria-describedby="jr-cat-new-hint">
+      </div>
+      <button type="button" class="jr-btn jr-btn--primary jr-btn--sm" id="jr-s04-cat-add">추가</button>
+    </div>
+    <p class="jr-slot jr-slot--empty" id="jr-cat-new-hint"></p>
+
+    <h2 class="jr-section-title">데이터 관리</h2>
+    <button type="button" class="jr-btn jr-btn--secondary jr-btn--block" id="jr-s04-export">내보내기</button>
+
+    <section class="jr-export-fallback" id="jr-export-fallback" aria-live="polite" hidden>
+      <p class="jr-export-fallback__notice" id="jr-export-notice"></p>
+      <textarea class="jr-export-fallback__text" id="jr-export-text" readonly aria-label="내보낸 데이터 전체"></textarea>
+      <button type="button" class="jr-btn jr-btn--secondary" id="jr-export-selectall">전체 선택</button>
+    </section>
+
+    <div class="jr-stack-16">
+      <button type="button" class="jr-btn jr-btn--secondary jr-btn--block" id="jr-s04-import">가져오기</button>
+      <input type="file" class="jr-file-input" id="jr-import-file" accept="application/json,.json"
+             aria-label="가져올 백업 파일 선택" tabindex="-1">
+    </div>
+
+    <h2 class="jr-section-title">데이터 초기화</h2>
+    <button type="button" class="jr-btn jr-btn--danger jr-btn--block" id="jr-s04-wipe">전체 삭제</button>
+  </main>
+
+  <!-- ══════════════════ 하단 탭바 ══════════════════ -->
+  <nav class="jr-tabbar" id="jr-tabbar" aria-label="주요 화면">
+    <button type="button" class="jr-tab jr-tab--active" data-screen="s01" aria-current="page">
+      <svg class="jr-tab__icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" aria-hidden="true" focusable="false">
+        <path d="M4 11l8-7 8 7"/><path d="M6 10v9a1 1 0 001 1h4v-6h2v6h4a1 1 0 001-1v-9"/></svg>
+      <span>홈</span>
+    </button>
+    <button type="button" class="jr-tab" data-screen="s03">
+      <svg class="jr-tab__icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" aria-hidden="true" focusable="false">
+        <path d="M5 20V10M12 20V4M19 20v-7"/></svg>
+      <span>통계</span>
+    </button>
+    <button type="button" class="jr-tab" data-screen="s04">
+      <svg class="jr-tab__icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" aria-hidden="true" focusable="false">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
+      <span>설정</span>
+    </button>
+  </nav>
+
+</div><!-- /#jr-app -->
+
+<!-- ★ 상시 DOM. 부팅 시 만들고 지우지 않습니다 (§4-12 · Q-033) -->
+<div id="jr-toast" class="jr-toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<!-- ══════════════════ 템플릿 (cloneNode 로만 사용 · HTML 문자열 주입 금지) ══════════════════ -->
+<template id="jr-tpl-expense-row">
+  <button type="button" class="jr-expense-row">
+    <span class="jr-expense-row__main">
+      <span class="jr-expense-row__category"></span>
+      <span class="jr-expense-row__memo"></span>
+    </span>
+    <span class="jr-expense-row__side">
+      <span class="jr-expense-row__day"></span>
+      <span class="jr-expense-row__amount"></span>
+    </span>
+  </button>
+</template>
+
+<template id="jr-tpl-chip">
+  <button type="button" class="jr-chip" role="radio" aria-checked="false" tabindex="-1"></button>
+</template>
+
+<template id="jr-tpl-stat-row">
+  <div class="jr-stat-row">
+    <div class="jr-stat-row__head">
+      <span class="jr-stat-row__name"></span>
+      <span class="jr-stat-row__value"></span>
+    </div>
+    <div class="jr-bar-track"><div class="jr-bar-fill"></div></div>
+  </div>
+</template>
+
+<template id="jr-tpl-category-row">
+  <div class="jr-category-row">
+    <span class="jr-category-row__name"></span>
+    <span class="jr-category-row__actions">
+      <button type="button" class="jr-btn jr-btn--secondary jr-btn--sm" data-act="rename">이름변경</button>
+      <button type="button" class="jr-btn jr-btn--danger jr-btn--sm" data-act="delete">삭제</button>
+    </span>
+  </div>
+</template>
+
+<template id="jr-tpl-category-edit">
+  <div class="jr-category-edit">
+    <div class="jr-category-edit__row">
+      <input id="jr-cat-edit-input" class="jr-input jr-category-row__edit" type="text"
+             autocomplete="off" aria-label="카테고리 이름" aria-describedby="jr-cat-edit-hint">
+      <button type="button" class="jr-btn jr-btn--primary jr-btn--sm" data-act="confirm">확인</button>
+      <button type="button" class="jr-btn jr-btn--secondary jr-btn--sm" data-act="cancel">취소</button>
+    </div>
+    <p class="jr-slot jr-slot--empty" id="jr-cat-edit-hint"></p>
+  </div>
+</template>
+
+<template id="jr-tpl-empty-state">
+  <div class="jr-empty-state">
+    <p class="jr-empty-state__title"></p>
+    <p class="jr-empty-state__body"></p>
+  </div>
+</template>
+
+<template id="jr-tpl-s02-delete">
+  <button type="button" class="jr-btn jr-btn--danger jr-btn--block" id="jr-s02-delete">이 기록 삭제</button>
+</template>
+
+<template id="jr-tpl-banner">
+  <div class="jr-banner">
+    <span class="jr-banner__icon"></span>
+    <p class="jr-banner__text"></p>
+  </div>
+</template>
+
+<template id="jr-tpl-banner-close">
+  <button type="button" class="jr-banner__close" aria-label="닫기">
+    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round" fill="none" aria-hidden="true" focusable="false">
+      <path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
+</template>
+
+<template id="jr-tpl-dialog">
+  <div class="jr-dialog-overlay" id="jr-dialog-overlay">
+    <div class="jr-dialog" role="alertdialog" aria-modal="true"
+         aria-labelledby="jr-dialog-title" aria-describedby="jr-dialog-desc">
+      <p class="jr-dialog__title" id="jr-dialog-title"></p>
+      <p class="jr-dialog__desc" id="jr-dialog-desc"></p>
+      <div class="jr-dialog__actions">
+        <button type="button" class="jr-btn jr-btn--secondary" data-act="left"></button>
+        <button type="button" class="jr-btn" data-act="right"></button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- 로드 순서 고정 (개발-분할안 §5-5). defer·async·type="module" 금지 -->
+<script src="js/err.js"></script>
+<script src="js/store.js"></script>
+<script src="js/model.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/io.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/boot.js"></script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>J.A.R.V.I.S. · COMMAND CENTER</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%233b9dff' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%233b9dff'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="/static/hud.css" />
+</head>
+<body>
+
+<!-- 부팅 시퀀스: 마이크와 소리는 사용자의 첫 동작이 있어야 열립니다. -->
+<div class="boot" id="boot">
+  <div class="boot-inner">
+    <div class="boot-ring"><span></span><span></span><span></span></div>
+    <h1>J.A.R.V.I.S.</h1>
+    <ul class="boot-log" id="boot-log"></ul>
+    <button id="boot-go" class="boot-go">시스템 시작</button>
+    <p class="boot-note">시작하면 마이크와 스피커를 엽니다. 음성은 이 브라우저 안에서만 처리됩니다.</p>
+  </div>
+</div>
+
+<header class="bar">
+  <div class="brand">J.A.R.V.I.S.<span>· COMMAND CENTER</span></div>
+  <div class="bar-right">
+    <a class="chip chip-link" href="/engine">◎ OPTIMAL ENGINE</a>
+    <span id="wake" class="chip chip-wake">WAKE · 대기</span>
+    <span id="link" class="chip">LINK —</span>
+    <span id="net" class="chip">NET —</span>
+    <span id="clock" class="clock">--:--</span>
+  </div>
+</header>
+
+<main class="hud">
+  <!-- 왼쪽: 상태 -->
+  <section class="panel" aria-labelledby="vitals-h">
+    <h2 id="vitals-h">SYSTEM VITALS</h2>
+    <div class="gauges">
+      <div class="gauge"><div class="dial" id="g-cpu" style="--v:0"><b>—</b></div><span>CPU</span></div>
+      <div class="gauge"><div class="dial" id="g-ram" style="--v:0"><b>—</b></div><span>RAM</span></div>
+      <div class="gauge"><div class="dial" id="g-io" style="--v:0"><b>—</b></div><span>I/O</span></div>
+    </div>
+
+    <h2>VAULT SYNC</h2>
+    <div class="meter"><i id="sync-bar" style="width:0%"></i></div>
+    <p class="muted" id="sync-text">볼트를 읽는 중…</p>
+    <ul class="kv" id="vault-kv"></ul>
+
+    <h2>AUDIO I/O</h2>
+    <canvas id="wave" height="60" aria-hidden="true"></canvas>
+    <p class="muted small" id="audio-state">LOCAL · STT 대기 · TTS 대기</p>
+    <div class="switches">
+      <label class="switch"><input type="checkbox" id="always-on" checked /><span>상시 대기 ("자비스")</span></label>
+      <label class="switch"><input type="checkbox" id="speak-on" checked /><span>소리로 답하기</span></label>
+    </div>
+  </section>
+
+  <!-- 가운데: 코어 -->
+  <section class="panel center" aria-labelledby="core-h">
+    <h2 id="core-h" class="sr-only">CORE</h2>
+    <div class="core" id="core">
+      <canvas id="reactor" width="440" height="440" aria-hidden="true"></canvas>
+      <div class="core-label"><b>J.A.R.V.I.S.</b><em id="core-state">STANDBY</em></div>
+    </div>
+    <p class="status" id="status">"자비스"라고 부르거나, 스페이스바를 누른 채 말하세요.</p>
+    <p class="heard" id="heard"></p>
+    <div class="answer" id="answer">시스템 대기 중.</div>
+    <form class="ask" id="ask-form" autocomplete="off">
+      <input id="ask-input" placeholder="말하거나, 여기에 적으세요 — 예: 오늘 할 일 정리해줘" />
+      <button type="submit">전송</button>
+      <button type="button" id="mic" class="mic" title="누르고 말하기 (스페이스바)">🎙</button>
+    </form>
+    <p class="muted small" id="route-info"></p>
+  </section>
+
+  <!-- 오른쪽: 명령·일정 -->
+  <section class="panel" aria-labelledby="deck-h">
+    <h2 id="deck-h">COMMAND DECK</h2>
+    <div class="deck" id="deck"></div>
+
+    <h2>SCHEDULE · TODAY</h2>
+    <ul class="schedule" id="schedule"></ul>
+    <p class="muted small">시간이 되면 부르지 않아도 먼저 실행하고 읽어 드립니다.</p>
+  </section>
+</main>
+
+<div class="lower">
+  <section class="panel" aria-labelledby="team-h">
+    <h2 id="team-h">AGENT TEAM · NOTION</h2>
+    <div id="team-body"><p class="muted small">노션 스냅샷을 읽는 중…</p></div>
+  </section>
+
+  <section class="panel" aria-labelledby="log-h">
+    <h2 id="log-h">CONVERSATION</h2>
+    <ol class="log" id="log"></ol>
+  </section>
+
+  <section class="panel" aria-labelledby="live-h">
+    <h2 id="live-h">LIVE FROM THE VAULT</h2>
+    <div class="notes" id="notes"></div>
+  </section>
+</div>
+
+<script src="/static/hud.js"></script>
+</body>
+</html>

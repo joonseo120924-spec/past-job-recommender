@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>OPTIMAL ENGINE · J.A.R.V.I.S.</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%233b9dff' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%233b9dff'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="/static/engine.css" />
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- 왼쪽 내비 -->
+  <nav class="rail" aria-label="섹션">
+    <div class="rail-brand">JARVIS OS<span>V1 · OPERATOR MODE</span></div>
+
+    <p class="rail-h">SITE</p>
+    <ul class="rail-list">
+      <li><a href="/">HUD</a></li>
+      <li><a href="/#deck">COMMANDS</a></li>
+      <li><a href="/#schedule">SCHEDULE</a></li>
+      <li><a href="/#vault">VAULT</a></li>
+    </ul>
+
+    <p class="rail-h">INTELLIGENCE</p>
+    <ul class="rail-list">
+      <li><a class="on" href="/engine">OPTIMAL ENGINE</a></li>
+      <li><button type="button" data-cluster="people">ORG CHART</button></li>
+      <li><button type="button" data-cluster="tools">CONNECTIONS</button></li>
+      <li><button type="button" data-cluster="pillars">REFERENCE MODEL</button></li>
+    </ul>
+
+    <p class="rail-h">AGENTS</p>
+    <ul class="rail-list" id="rail-divisions"></ul>
+
+    <p class="rail-status" id="rail-status">systems live · … nodes</p>
+  </nav>
+
+  <!-- 가운데 -->
+  <main class="stage">
+    <header class="crumb">
+      <span class="path">jarvis-os / <b>optimal-engine</b></span>
+      <div class="crumb-right">
+        <a class="ghost" href="/">← HUD 로</a>
+      </div>
+    </header>
+
+    <section class="core-input">
+      <p class="eyebrow">// KNOWLEDGE CORE</p>
+      <h1>OPTIMAL ENGINE<i></i></h1>
+      <form id="dump-form" autocomplete="off">
+        <input id="dump" placeholder="브레인에 쏟아부으세요 — 또는 문서를 끌어다 놓으세요" />
+        <button type="submit">기억</button>
+      </form>
+      <p class="hint">텍스트 · 드래그 업로드 — 넣은 것은 볼트 <code>raw/</code> 에 그대로 쌓입니다.</p>
+    </section>
+
+    <div class="viewbar">
+      <div class="seg" role="group" aria-label="레이아웃">
+        <button type="button" id="mode-radial" class="on">Radial</button>
+        <button type="button" id="mode-neural">Neural</button>
+      </div>
+      <div class="crumbs" id="crumbs"></div>
+      <div class="viewbar-right">
+        <button type="button" id="reset">◎ 전체</button>
+        <button type="button" id="full">⤢ Fullscreen</button>
+      </div>
+    </div>
+
+    <div class="canvas-wrap" id="canvas-wrap">
+      <canvas id="graph"></canvas>
+      <div class="tip" id="tip" hidden></div>
+      <p class="canvas-hint">드래그 이동 · 휠 확대 · 노드 클릭하면 그 안으로</p>
+    </div>
+  </main>
+
+  <!-- 오른쪽 -->
+  <aside class="rail rail-right" aria-label="렌즈와 목록">
+    <p class="rail-h">LENS</p>
+    <div class="lens" id="lens"></div>
+
+    <p class="rail-h">LEGEND</p>
+    <ul class="legend" id="legend"></ul>
+
+    <p class="rail-h">DIRECTORY</p>
+    <input id="search" class="search" placeholder="이름으로 찾기" />
+    <ul class="directory" id="directory"></ul>
+  </aside>
+</div>
+
+<div class="drop" id="drop" hidden><span>여기에 놓으면 볼트에 저장합니다</span></div>
+
+<script src="/static/engine.js"></script>
+</body>
+</html>

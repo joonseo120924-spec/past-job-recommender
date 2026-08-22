@@ -1,0 +1,126 @@
+{
+  "team": {
+    "name": "AI 앱 개발팀",
+    "members": 20,
+    "divisions": 6,
+    "auditor": "team-master (독립 감사관)",
+    "home_url": "https://app.notion.com/p/3b750286df808188b56be24bf6d49c40",
+    "cadence": "앱 하나를 4일 주기 · 매일 07:07 자동 실행"
+  },
+  "observed_at": "2026-08-15",
+  "synced_at": "2026-08-22T12:05:39",
+  "cycle": {
+    "number": 2,
+    "day": 1,
+    "stage": "② 프로덕트",
+    "state": "구조설계 미완"
+  },
+  "apps": [
+    {
+      "name": "FocusNoise",
+      "cycle": 1,
+      "state": "frozen",
+      "label": "❄️ 미완 종료·동결 (D-017)",
+      "note": "FIX-1 로 오류 실체는 확인됨 (Wake Lock 거부 시 고지 미표시). 개발본부 미반영",
+      "url": "https://app.notion.com/p/3bd50286df8081efbba6f63ad9589f9a"
+    },
+    {
+      "name": "가계부·지출계산기 (정레)",
+      "cycle": 2,
+      "state": "in_progress",
+      "label": "⏳ ② 프로덕트 — 구조설계 미완",
+      "note": "① 전략 승인 89점. 저장은 localStorage 단일 확정 (file:// 제약)",
+      "url": "https://app.notion.com/p/3bd50286df8081018972ee03e0570e33"
+    }
+  ],
+  "audit": {
+    "verdict": "conditional",
+    "label": "⚠️ 3차 조건부 승인",
+    "critical": 0,
+    "major": 3,
+    "minor": 6,
+    "note": "D-016 복원은 조건부 승인이며 완전 승인이 아닙니다"
+  },
+  "divisions": [
+    {
+      "no": "①",
+      "name": "전략",
+      "lead": "strategy-lead",
+      "does": "뭘 만들지 정한다"
+    },
+    {
+      "no": "②",
+      "name": "프로덕트",
+      "lead": "product-planner",
+      "does": "질문 없이 만들 수 있게 설계"
+    },
+    {
+      "no": "③",
+      "name": "디자인",
+      "lead": "design-lead",
+      "does": "어떻게 보이는지 + 접근성"
+    },
+    {
+      "no": "④",
+      "name": "개발",
+      "lead": "tech-lead",
+      "does": "실제로 돌아가는 코드"
+    },
+    {
+      "no": "⑤",
+      "name": "품질",
+      "lead": "qa-lead",
+      "does": "가장 무거운 권한"
+    },
+    {
+      "no": "⑥",
+      "name": "출시운영",
+      "lead": "gtm-lead",
+      "does": "복붙만 하면 되게"
+    }
+  ],
+  "blockers": [
+    ".claude/team-org.md:70 서술이 실행 현실과 반대 — 정확한 문장이 daily-app/SKILL.md:68 에 이미 있음",
+    "에이전트 20개의 산출 경로에 앱 폴더 접두사 없음 — 판본 드리프트 6 이 여기서 계속 실패",
+    "Routine 프롬프트 교체 — ai-team/routine-prompt.md 의 얇은 교체안",
+    "handoff/03·04 를 '반드시 읽습니다' 로 명시한 에이전트 없음",
+    "daily-app/SKILL.md 의 4-1 ↔ 5 순서 결함 — 노션 미동기화 건수가 구조적으로 예측값이 됨"
+  ],
+  "next": [
+    "GitHub 웹 편집 3개 파일(SESSION-LOG·STATE·cycle) 반영 완료 확인",
+    "FocusNoise 재개 vs 사이클 2(가계부) 계속 — 사용자 방향 결정",
+    "원격 트랙 🔴 미해결 차단 5건 처리",
+    "D-021(회의실 노션 실시간 백업) 감사관 검증"
+  ],
+  "principles": [
+    "주장을 믿지 않는다 — '완료했습니다'는 무효, 파일을 직접 열어 확인",
+    "못 한 건 못 했다고 쓴다 — 검증 못 한 항목은 '확인 불가 — 사유'",
+    "혼자 판단하지 않는다 — 모든 산출물은 다른 사람의 검토를 1회 이상"
+  ],
+  "sources": [
+    {
+      "id": "3b750286-df80-8188-b56b-e24bf6d49c40",
+      "title": "AI 앱 개발팀 (팀 홈)",
+      "note_id": "notion-team-home",
+      "url": "https://app.notion.com/p/3b750286df808188b56be24bf6d49c40"
+    },
+    {
+      "id": "3b750286-df80-8173-a09e-f8dc7712e713",
+      "title": "작업 일지",
+      "note_id": "notion-work-log",
+      "url": "https://app.notion.com/p/3b750286df808173a09ef8dc7712e713"
+    },
+    {
+      "id": "3b750286-df80-814b-8c9f-eb6ed22f7dce",
+      "title": "팀원 20명 역할 명세",
+      "note_id": "notion-members",
+      "url": "https://app.notion.com/p/3b750286df80814b8c9feb6ed22f7dce"
+    },
+    {
+      "id": "3b750286-df80-81df-9d1f-fe04c105c200",
+      "title": "팀 규정 · 마스터 판단 기준",
+      "note_id": "notion-rules",
+      "url": "https://app.notion.com/p/3b750286df8081df9d1ffe04c105c200"
+    }
+  ]
+}
