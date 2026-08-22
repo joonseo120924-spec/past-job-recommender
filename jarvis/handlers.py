@@ -13,6 +13,7 @@ from datetime import date, datetime, timedelta
 
 from jarvis import flow
 from jarvis.agents import load_team
+from jarvis.council import Council
 from jarvis.config import DAILY_FLOW
 from jarvis.metrics import LABELS, MetricsLog
 from jarvis.vault import Vault
@@ -350,5 +351,35 @@ def run_status(vault: Vault, query: str, now: datetime) -> Answer:
     )
 
 
+# ----------------------------------------------------------------- council
+
+
+def run_council(vault: Vault, query: str, now: datetime) -> Answer:
+    """앱 밖 안건으로 팀을 소집합니다."""
+    topic, seats, note_id = Council(vault).convene(query, now=now)
+    if not seats:
+        return Answer("소집할 본부를 정하지 못했습니다. 안건을 한 문장으로 말해 주세요.", {"topic": topic})
+    people = sum(1 + len(seat.members) for seat in seats)
+    spoken = (
+        f"'{topic}' 안건으로 {len(seats)}개 본부 {people}명을 소집했습니다. "
+        + " ".join(f"{seat.label}은 {seat.duty}." for seat in seats)
+        + " 파트장만 승인권을 가지고, 마지막에 감사관이 판정합니다. 자리표를 볼트에 저장했습니다."
+    )
+    return Answer(
+        spoken,
+        {
+            "topic": topic,
+            "seats": [
+                {"division": s.division, "label": s.label, "lead": s.lead,
+                 "members": s.members, "duty": s.duty, "reason": s.reason}
+                for s in seats
+            ],
+            "people": people,
+        },
+        note_id,
+    )
+
+
+HANDLERS["council"] = run_council
 HANDLERS["agents"] = run_agents
 HANDLERS["status"] = run_status

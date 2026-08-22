@@ -16,7 +16,9 @@ def test_vitals_shape(client):
 
 def test_skills_endpoint_lists_every_skill_folder(client):
     names = {s["name"] for s in client.get("/api/skills").json()["skills"]}
-    assert names == {"metrics", "inbox", "trends", "plan", "vault", "agents", "status"}
+    assert names == {
+        "metrics", "inbox", "trends", "plan", "vault", "agents", "status", "council",
+    }
 
 
 def test_schedule_endpoint(client):

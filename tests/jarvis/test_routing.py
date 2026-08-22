@@ -12,7 +12,7 @@ def skills():
 
 def test_all_skills_are_loaded(skills):
     assert {s.name for s in skills} == {
-        "metrics", "inbox", "trends", "plan", "vault", "agents", "status",
+        "metrics", "inbox", "trends", "plan", "vault", "agents", "status", "council",
     }
 
 
