@@ -6,10 +6,9 @@ import re
 from datetime import datetime
 from pathlib import Path
 
-from jarvis.config import DAILY_FLOW
+from jarvis import flow
 from jarvis.events import EventBus
 from jarvis.handlers import HANDLERS, Answer
-from jarvis.metrics import MetricsLog
 from jarvis.skills_registry import Skill, load_skills, route
 from jarvis.vault import Vault
 
@@ -108,28 +107,4 @@ class Assistant:
 
     def schedule(self, *, now: datetime | None = None) -> list[dict]:
         """하루 흐름 + 각 블록이 오늘 이미 실행됐는지 여부."""
-        now = now or datetime.now()
-        today = now.strftime("%Y-%m-%d")
-        outputs = {n.id for n in self.vault.notes("outputs")}
-        prefix = {"inbox": "brief", "plan": "plan", "review": "review"}
-        # metrics 는 노트를 남기지 않습니다. 오늘 스냅샷이 있으면 확인한 겁니다.
-        metrics_today = any(
-            row.get("date") == today for row in MetricsLog(self.vault.root).snapshots()
-        )
-        blocks = []
-        for at, skill, description in DAILY_FLOW:
-            marker = prefix.get(skill)
-            done = (
-                metrics_today if skill == "metrics"
-                else (f"{marker}-{today}" in outputs if marker else False)
-            )
-            blocks.append(
-                {
-                    "at": at,
-                    "skill": skill,
-                    "description": description,
-                    "done": done,
-                    "past": now.strftime("%H:%M") >= at,
-                }
-            )
-        return blocks
+        return flow.blocks(self.vault, now)

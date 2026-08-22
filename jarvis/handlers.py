@@ -11,6 +11,7 @@ from collections import Counter
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 
+from jarvis import flow
 from jarvis.agents import load_team
 from jarvis.config import DAILY_FLOW
 from jarvis.metrics import LABELS, MetricsLog
@@ -324,13 +325,7 @@ def run_status(vault: Vault, query: str, now: datetime) -> Answer:
     team = load_team(vault)
 
     metrics = run_metrics(vault, query, now)
-    schedule_done = 0
-    today = f"{now:%Y-%m-%d}"
-    outputs = {n.id for n in vault.notes("outputs")}
-    for _, skill, _ in DAILY_FLOW:
-        marker = {"inbox": "brief", "plan": "plan", "review": "review"}.get(skill)
-        if marker and f"{marker}-{today}" in outputs:
-            schedule_done += 1
+    schedule_done = flow.done_count(vault, now)
 
     cpu = f"{system['cpu']}%" if system.get("cpu") is not None else "측정 불가"
     ram = f"{system['ram']}%" if system.get("ram") is not None else "측정 불가"

@@ -33,7 +33,8 @@ const state = {
   trail: [],              // 브레드크럼
   view: { x: 0, y: 0, scale: 1 },
   hover: null,
-  frame: 0,
+  index: new Map(),       // id → 노드
+  dirty: true,            // 바뀐 게 있을 때만 다시 그립니다
 };
 
 const canvas = $("graph");
@@ -44,12 +45,14 @@ const ctx = canvas.getContext("2d");
 async function load() {
   const res = await fetch("/api/graph");
   state.graph = await res.json();
+  state.index = new Map(state.graph.nodes.map((node) => [node.id, node]));
   state.graph.legend.forEach((l) => state.kinds.add(l.kind));
   renderRails();
   focusCluster(null);
 }
 
-const byId = (id) => state.graph.nodes.find((n) => n.id === id);
+// 엣지 하나마다 93개 노드를 훑으면 프레임마다 3만 번을 뒤집니다.
+const byId = (id) => state.index.get(id);
 
 function nodesFor(clusterId) {
   if (!clusterId) return state.graph.nodes;
@@ -73,6 +76,7 @@ function computeLayout() {
   if (state.mode === "radial") radialLayout(nodes);
   else neuralLayout(nodes);
   fitView();
+  invalidate();
 }
 
 /* 배치가 끝나면 화면에 맞춥니다. 파고든 클러스터는 노드가 적어서, 고정 배율로
@@ -270,8 +274,15 @@ function draw() {
 }
 
 function tick() {
-  draw();
-  state.frame = requestAnimationFrame(tick);
+  if (state.dirty) {
+    draw();
+    state.dirty = false;
+  }
+  requestAnimationFrame(tick);
+}
+
+function invalidate() {
+  state.dirty = true;
 }
 
 /* ------------------------------------------------------------------ 화면 조작 */
@@ -327,6 +338,7 @@ function renderLens() {
     input.addEventListener("change", () => {
       if (input.checked) state.kinds.add(input.dataset.kind);
       else state.kinds.delete(input.dataset.kind);
+      invalidate();
     })
   );
 }
@@ -358,6 +370,7 @@ function renderDirectory() {
       if (node?.cluster) focusCluster(node.cluster);
       state.hover = node.id;
       showTip(node, null);
+      invalidate();
     })
   );
 }
@@ -408,17 +421,21 @@ canvas.addEventListener("mousemove", (event) => {
     state.view.x += (event.clientX - last.x) / state.view.scale;
     state.view.y += (event.clientY - last.y) / state.view.scale;
     last = { x: event.clientX, y: event.clientY };
+    invalidate();
     return;
   }
   const node = pick(event);
-  state.hover = node ? node.id : null;
+  const hovered = node ? node.id : null;
+  if (hovered !== state.hover) invalidate();
+  state.hover = hovered;
   showTip(node, event);
 });
-canvas.addEventListener("mouseleave", () => { state.hover = null; showTip(null); });
+canvas.addEventListener("mouseleave", () => { state.hover = null; showTip(null); invalidate(); });
 canvas.addEventListener("wheel", (event) => {
   event.preventDefault();
   const factor = event.deltaY < 0 ? 1.12 : 0.89;
   state.view.scale = Math.max(0.35, Math.min(3.2, state.view.scale * factor));
+  invalidate();
 }, { passive: false });
 canvas.addEventListener("click", (event) => {
   const node = pick(event);
@@ -487,8 +504,8 @@ window.addEventListener("drop", async (event) => {
   await load();
 });
 
-window.addEventListener("resize", () => { resize(); });
-document.addEventListener("fullscreenchange", resize);
+window.addEventListener("resize", () => { resize(); invalidate(); });
+document.addEventListener("fullscreenchange", () => { resize(); invalidate(); });
 
 resize();
 tick();

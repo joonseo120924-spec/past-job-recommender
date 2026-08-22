@@ -106,19 +106,25 @@ class Vault:
         for kind in KINDS:
             (self.root / kind).mkdir(parents=True, exist_ok=True)
         (self.root / "data").mkdir(parents=True, exist_ok=True)
+        # 경로 → (mtime_ns, Note). 파일을 다시 읽는 것보다 stat 이 훨씬 쌉니다.
+        # 옵시디언에서 밖에서 고쳐도 mtime 이 바뀌므로 그대로 반영됩니다.
+        self._cache: dict[Path, tuple[int, Note]] = {}
 
     # ---------------------------------------------------------------- 읽기
 
-    def _load(self, path: Path) -> Note | None:
+    def _load(self, path: Path, mtime_ns: int | None = None) -> Note | None:
         try:
             raw = path.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError):
             return None
         meta, body = _parse_frontmatter(raw)
         kind = path.parent.name if path.parent.name in KINDS else "raw"
-        stat_time = datetime.fromtimestamp(path.stat().st_mtime).isoformat(
-            timespec="seconds"
-        )
+        if mtime_ns is None:
+            try:
+                mtime_ns = path.stat().st_mtime_ns
+            except OSError:
+                return None
+        stat_time = datetime.fromtimestamp(mtime_ns / 1e9).isoformat(timespec="seconds")
         tags = meta.get("tags", [])
         if isinstance(tags, str):
             tags = [t for t in tags.split() if t]
@@ -137,14 +143,33 @@ class Vault:
         )
 
     def notes(self, kind: str | None = None) -> list[Note]:
-        """볼트 전체를 훑습니다. 개인 볼트 규모(수천 건)에서는 인덱스보다 단순한 게 낫습니다."""
+        """볼트를 훑습니다 — 바뀐 파일만 다시 읽습니다.
+
+        별도 인덱스 파일은 두지 않습니다. mtime 만 보면 되고, 인덱스는 언젠가
+        실제 파일과 어긋나는데 그때 틀린 답을 확신에 차서 말하게 됩니다.
+        """
         kinds = (kind,) if kind else KINDS
         found: list[Note] = []
+        seen: set[Path] = set()
         for k in kinds:
             for path in sorted((self.root / k).rglob("*.md")):
-                note = self._load(path)
+                try:
+                    mtime_ns = path.stat().st_mtime_ns
+                except OSError:
+                    continue    # 훑는 도중 지워진 파일
+                seen.add(path)
+                cached = self._cache.get(path)
+                if cached is not None and cached[0] == mtime_ns:
+                    found.append(cached[1])
+                    continue
+                note = self._load(path, mtime_ns)
                 if note is not None:
+                    self._cache[path] = (mtime_ns, note)
                     found.append(note)
+        if kind is None:
+            # 전체를 훑었을 때만 정리합니다. 부분 훑기로 지우면 다른 칸이 날아갑니다.
+            for stale in set(self._cache) - seen:
+                del self._cache[stale]
         found.sort(key=lambda n: n.updated, reverse=True)
         return found
 
