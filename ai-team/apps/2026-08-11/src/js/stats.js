@@ -12,10 +12,10 @@ JR.stats = (function () {
   var DELETED_ID = '__deleted__';
   var DELETED_LABEL = '미분류(삭제된 카테고리)';
 
-  var statsCache = {};
+  var statsCache = Object.create(null);   /* INT-42 */
 
   function invalidate() {
-    statsCache = {};
+    statsCache = Object.create(null);   /* INT-42 */
   }
 
   /* R-6 순수 함수 — §4-3 구현 그대로. 합이 항상 정확히 100 */
@@ -93,7 +93,9 @@ JR.stats = (function () {
       var mapR = JR.model.getCategoryMap();
       var map = (mapR.ok && mapR.data.map) ? mapR.data.map : {};
 
-      var buckets = {}, order = [], i, e, key, b;
+      /* INT-42 — buckets 를 평범한 객체로 두면 categoryId 가 '__proto__' 일 때
+       * 세터를 타 프로토타입이 교체되고 버킷이 매 건 새로 만들어진다 */
+      var buckets = Object.create(null), order = [], i, e, key, b;
       for (i = 0; i < list.length; i++) {
         e = list[i];
         key = Object.prototype.hasOwnProperty.call(map, e.categoryId) ? e.categoryId : DELETED_ID;

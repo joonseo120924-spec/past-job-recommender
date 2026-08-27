@@ -20,12 +20,23 @@ JR.io = (function () {
 
   var AMOUNT_MAX = 999999999;
   var NAME_MAX = 12;
+  var MEMO_MAX = 100;                 /* INT-43(4) — JR.model.MEMO_MAX 와 같은 값·같은 세는 단위(코드포인트) */
   var CATEGORY_MAX = 20;
   var MAX_REJECTED = 100;
   var RE_DATE = /^\d{4}-\d{2}-\d{2}$/;
   var RE_MONTH = /^\d{4}-\d{2}$/;
 
   function isInt(v) { return typeof v === 'number' && isFinite(v) && Math.floor(v) === v; }
+
+  /* QA-S-005 — 형식(YYYY-MM-DD)만 보면 2026-02-30 · 2026-04-31 이 통과합니다.
+   * 달력에 없는 날에 금액이 들어가면 UI 월 이동으로 도달할 수 없는 곳에 돈이 숨고,
+   * 총합에는 잡히는데 목록에는 안 보이는 상태가 만들어집니다.
+   * 판정은 UI 경로(E-109)와 **같은 기준**입니다 — model.js isRealDate 와 같은 구현. */
+  function isRealDate(s) {
+    var y = parseInt(s.slice(0, 4), 10), m = parseInt(s.slice(5, 7), 10), d = parseInt(s.slice(8, 10), 10);
+    var dt = new Date(y, m - 1, d);
+    return dt.getFullYear() === y && dt.getMonth() === m - 1 && dt.getDate() === d;
+  }
   function isArray(v) { return Object.prototype.toString.call(v) === '[object Array]'; }
 
   function pad2(n) { return n < 10 ? '0' + n : '' + n; }
@@ -170,8 +181,13 @@ JR.io = (function () {
     if (typeof o.id !== 'string' || o.id === '') { return null; }
     if (Object.prototype.hasOwnProperty.call(seen, o.id)) { return null; }
     if (typeof o.date !== 'string' || !RE_DATE.test(o.date)) { return null; }
+    if (!isRealDate(o.date)) { return null; }                  /* QA-S-005 */
     if (!isInt(o.amount) || o.amount < 1 || o.amount > AMOUNT_MAX) { return null; }
     if (typeof o.categoryId !== 'string') { return null; }
+    /* INT-43(4)-4 — 100자를 넘는 memo 는 **거부**합니다. 잘라서 저장하면
+     * 백업 복원이 사용자 메모를 말없이 자르는 것이 되어 같은 종류의 소실입니다.
+     * 거부 건은 기존 rejected 경로 → E-409. 새 E-코드 없음. */
+    if (typeof o.memo === 'string' && JR.model.countChars(o.memo) > MEMO_MAX) { return null; }
     return {
       id: o.id,
       date: o.date,
@@ -224,7 +240,8 @@ JR.io = (function () {
       if (!isArray(obj.data.expenses) || !isArray(obj.data.categories)) { return E.fail('E-407', {}); }
 
       /* V-8 · 레코드 단위 검증 */
-      var rejected = [], seenE = {}, seenC = {}, i, rec;
+      /* INT-42 — 누산기는 Object.create(null). id 가 '__proto__' 여도 own 속성이 정상 생성된다 */
+      var rejected = [], seenE = Object.create(null), seenC = Object.create(null), i, rec;
       var validExpenses = [], validCategories = [];
       for (i = 0; i < obj.data.expenses.length; i++) {
         rec = validExpenseRecord(obj.data.expenses[i], seenE);
@@ -254,7 +271,7 @@ JR.io = (function () {
       }
 
       /* V-11 · 이름 중복 — 뒤에 나온 것을 버림 (§2-6 기준) */
-      var deduped = [], nameSeen = {}, key;
+      var deduped = [], nameSeen = Object.create(null), key;   /* INT-42 */
       for (i = 0; i < validCategories.length; i++) {
         key = JR.model.normName(validCategories[i].name);
         if (Object.prototype.hasOwnProperty.call(nameSeen, key)) { continue; }

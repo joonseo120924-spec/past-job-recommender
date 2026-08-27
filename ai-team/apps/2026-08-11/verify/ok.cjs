@@ -1,3 +1,8 @@
+/* ⚠️ 폐기 — Q-066 판정(④ tech-lead · 2026-08-26). **이 도구로 기준선을 산출하지 마십시오.**
+ * 인자를 모르는 함수를 「미호출(인자 불명)」로 조용히 빼고도 「개수: N」을 출력해
+ * 비-{ok} 기준선을 네 번(12→17→18→28) 틀리게 만든 원인입니다. JR.ui 도 세지 않습니다.
+ * 대체 도구: verify/dev2-census.cjs (표면 전건을 ARGS 로 덮고 누락이 있으면 FAIL 로 중단 · INT-41 명단과 1:1 대조)
+ * 실행 코드는 한 줄도 고치지 않았습니다 — ⑤ 의 회귀 기준선을 그대로 두기 위해 이 주석만 붙였습니다. */
 (async()=>{
 const { chromium } = require('/opt/node22/lib/node_modules/playwright');
 const APP='file:///home/user/past-job-recommender/ai-team/apps/2026-08-11/src/index.html';

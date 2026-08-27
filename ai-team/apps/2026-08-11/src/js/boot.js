@@ -15,6 +15,7 @@ var JR = JR || {};
       if (typeof window.addEventListener !== 'function') { return false; }
       if (typeof document.querySelector !== 'function') { return false; }
       if (typeof Object.keys !== 'function') { return false; }
+      if (typeof Object.create !== 'function') { return false; }   /* INT-42(4) */
       if (typeof [].forEach !== 'function') { return false; }
       if (typeof [].indexOf !== 'function') { return false; }
       if (typeof [].filter !== 'function') { return false; }

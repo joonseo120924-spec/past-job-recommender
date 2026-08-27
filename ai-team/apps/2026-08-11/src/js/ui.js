@@ -71,7 +71,7 @@ JR.ui = (function () {
     importSupported: true
   };
 
-  var locks = {};
+  var locks = Object.create(null);   /* INT-42 */
   var toastTimer = null;
   var toastClearTimer = null;
   var notices = [];          /* [{code, params, at, closedEvent, closedState}] */
@@ -495,6 +495,17 @@ JR.ui = (function () {
   var SCREENS = ['s01', 's02', 's03', 's04'];
 
   function goScreen(id) {
+    /* QA-F-001 — 내보내기 대체 영역은 「내보내기를 누른 그 화면」에서만 열려 있어야 합니다.
+     * 접지 않으면 설정 화면에 다시 들어가기만 해도 누르지도 않은 기록 JSON 전문이 떠 있습니다.
+     * onExport 는 goScreen 이 아니라 renderS04 로 끝나므로 방금 누른 결과를 지우지 않습니다. */
+    var fb = $('jr-export-fallback');
+    if (fb) {
+      fb.setAttribute('hidden', '');
+      var fbText = $('jr-export-text');
+      if (fbText) { fbText.value = ''; }
+      var fbNotice = $('jr-export-notice');
+      if (fbNotice) { fbNotice.textContent = ''; }
+    }
     state.screen = id;
     document.body.setAttribute('data-screen', id);
     for (var i = 0; i < SCREENS.length; i++) {
@@ -798,7 +809,9 @@ JR.ui = (function () {
 
   /* 초안 — §6-6 · INT-12 · INT-28 */
 
-  function saveDraft() {
+  /* leaving === true 는 「화면이 가려지는 순간」(visibilitychange hidden · pagehide)입니다.
+   * blur/change 리스너가 이벤트 객체를 넘기므로 반드시 === true 로만 판정합니다. */
+  function saveDraft(leaving) {
     if (state.screen !== 's02' || !state.baseline) { return; }
     if (!isDirty()) { return; }
     var v = formValues();
@@ -806,7 +819,13 @@ JR.ui = (function () {
       mode: state.mode, targetId: state.targetId,
       date: v.date, amount: v.amount, categoryId: v.categoryId, memo: v.memo
     });
-    if (r && !r.ok && !state.e606Shown) {
+    if (!r || r.ok) { return; }
+    /* INT-37 · ⑤ 통합요청서 6단계 — 초안 저장 실패는 **화면이 가려지는 순간**에 일어납니다.
+     * 그 순간의 T 슬롯 토스트는 사용자에게 전달되지 않으므로 B 슬롯 배너(E-604)로 남깁니다.
+     * 복귀 후에도 남아 있어야 「작성 중이던 내용이 저장되지 않았다」를 알 수 있습니다.
+     * INT-32 가 E-413 을 B 슬롯으로 옮긴 것과 같은 논리입니다. */
+    if (leaving === true) { show('E-604'); return; }
+    if (!state.e606Shown) {
       state.e606Shown = true;                    /* 세션당 1회 */
       show(r.code, dataOf(r).params);
     }
@@ -847,7 +866,8 @@ JR.ui = (function () {
     JR.model.clearDraft();
     unlock('save');
     var warnings = dataOf(r).warnings || [];
-    if (warnings.length) { show(warnings[0]); } else { showToastText(MSG.SAVE_OK); }
+    /* INT-36 — warnings 원소는 {code, params}. params 를 빼면 화면에 빈 치환 자리가 나갑니다 */
+    if (warnings.length) { show(warnings[0].code, warnings[0].params); } else { showToastText(MSG.SAVE_OK); }
     state.baseline = null;
     state.historyPushed = state.historyPushed;
     leaveS02(false);
@@ -1138,7 +1158,12 @@ JR.ui = (function () {
 
     var memo = $('jr-memo');
     memo.addEventListener('input', function () {
-      if (countChars(memo.value) > 100) { memo.value = truncateChars(memo.value, 100); }
+      /* INT-43(4) — 메모 상한의 **정본 판정 지점**. index.html 의 maxlength 는 삭제했습니다.
+       * 실제로 잘렸을 때만 E-123 을 띄웁니다(자르지 않았는데 부르면 100자 근처 타이핑마다 토스트가 뜹니다). */
+      if (countChars(memo.value) > 100) {
+        memo.value = truncateChars(memo.value, 100);
+        show('E-123');
+      }
       updateMemoCounter();
     });
     memo.addEventListener('change', saveDraft);
@@ -1195,10 +1220,10 @@ JR.ui = (function () {
     /* 초안 저장 시점 3·4 (§6-6). boot.js 는 DOM 을 만지지 않으므로 폼 값은 여기서 저장합니다 */
     if (typeof document.addEventListener === 'function') {
       document.addEventListener('visibilitychange', function () {
-        if (document.visibilityState === 'hidden') { saveDraft(); }
+        if (document.visibilityState === 'hidden') { saveDraft(true); }   /* E-604 경로 */
       });
     }
-    window.addEventListener('pagehide', saveDraft);
+    window.addEventListener('pagehide', function () { saveDraft(true); });   /* E-604 경로 */
   }
 
   /* ──────────────────────────── 초기화 ──────────────────────────── */

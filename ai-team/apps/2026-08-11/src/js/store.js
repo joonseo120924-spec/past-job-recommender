@@ -244,7 +244,10 @@ JR.store = (function () {
 
   /* §3-4 쓰기 순서를 이 함수 하나가 전부 수행 */
   function writeAll(bundle) {
-    var codes = [], sExp, sCat, sSet, prevExp, prevCat, step, r, u;
+    /* INT-36 — 자리표시자를 가진 코드는 값을 함께 실어 보냅니다.
+     * codes 는 코드 문자열 배열 그대로 두고, 같은 반환 안의 codeParams 로 값을 함께 냅니다
+     * (INT-36 이 명시적으로 허용한 「같은 반환 안의 noticeParams/동등한 키」 형태). */
+    var codes = [], codeParams = Object.create(null), sExp, sCat, sSet, prevExp, prevCat, step, r, u;
     try {
       if (!bundle || typeof bundle !== 'object') { return E.fail('E-501', {}); }
 
@@ -292,9 +295,12 @@ JR.store = (function () {
       /* 예방: 사용률 80% 경고. 메모리 모드에서는 발생시키지 않는다(§6-1 5) */
       if (mode !== MODE_MEMORY) {
         u = usage();
-        if (u.ok && u.data.ratio >= 0.8) { codes.push('E-203'); }
+        if (u.ok && u.data.ratio >= 0.8) {
+          codes.push('E-203');
+          codeParams['E-203'] = { percent: Math.floor(u.data.ratio * 100) };   /* INT-36 — 그 시점의 사용률 */
+        }
       }
-      return E.ok({ codes: codes });
+      return E.ok({ codes: codes, codeParams: codeParams });
     } catch (e) {
       E.log('E-501', e);
       return E.fail('E-501', {});
@@ -363,6 +369,7 @@ JR.store = (function () {
       }
       for (k in snap) {
         if (!Object.prototype.hasOwnProperty.call(snap, k)) { continue; }
+        if (k.indexOf('jr.v1.') !== 0) { continue; }        /* QA-S-007 — 삭제 루프와 대칭 */
         if (typeof snap[k] !== 'string') { continue; }
         r = setRaw(k, snap[k]);
         if (!r.ok) { return E.fail('E-411', {}); }

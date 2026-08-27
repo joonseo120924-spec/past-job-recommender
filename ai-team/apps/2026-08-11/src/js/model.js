@@ -171,6 +171,27 @@ JR.model = (function () {
     }
   }
 
+  /* INT-36 — warnings 원소는 {code, params} 객체입니다. 코드 문자열 단독으로 내보내지 않습니다. */
+  function toWarnings(d) {
+    var out = [], i, c;
+    var list = (d && Object.prototype.toString.call(d.codes) === '[object Array]') ? d.codes : [];
+    var p = (d && d.codeParams) ? d.codeParams : {};
+    for (i = 0; i < list.length; i++) {
+      c = list[i];
+      out.push({ code: c, params: Object.prototype.hasOwnProperty.call(p, c) ? p[c] : {} });
+    }
+    return out;
+  }
+
+  /* INT-36 — init().data.notices 는 코드 문자열 배열이고 값은 noticeParams 로 함께 나갑니다 */
+  function mergeParams(target, src) {
+    var k;
+    if (!src || typeof src !== 'object') { return; }
+    for (k in src) {
+      if (Object.prototype.hasOwnProperty.call(src, k)) { target[k] = src[k]; }
+    }
+  }
+
   function persist(nextExpenses, nextCategories, nextSettings) {
     return S.writeAll({
       expenses: nextExpenses,
@@ -292,7 +313,7 @@ JR.model = (function () {
       memo = rawMemo.trim();
       sur = stripLoneSurrogates(memo);
       memo = sur.text;
-      if (sur.removed > 0) { warnings.push('E-122'); }
+      if (sur.removed > 0) { warnings.push({ code: 'E-122', params: {} }); }   /* INT-36 */
       memo = stripControls(memo);
       var memoLen = countChars(memo);
       if (memoLen > MEMO_MAX) {
@@ -323,6 +344,7 @@ JR.model = (function () {
     if (typeof o.id !== 'string' || o.id === '') { return null; }
     if (Object.prototype.hasOwnProperty.call(seen, o.id)) { return null; }
     if (typeof o.date !== 'string' || !RE_DATE.test(o.date)) { return null; }
+    if (!isRealDate(o.date)) { return null; }                  /* QA-S-005 같은 뿌리 — 부팅 복구 경로 */
     if (!isInt(o.amount) || o.amount < 1 || o.amount > AMOUNT_MAX) { return null; }
     if (typeof o.categoryId !== 'string') { return null; }
     return {
@@ -351,7 +373,7 @@ JR.model = (function () {
   }
 
   function sanitizeList(arr, kind, rejected) {
-    var out = [], seen = {}, i, rec;
+    var out = [], seen = Object.create(null), i, rec;   /* INT-42 */
     for (i = 0; i < arr.length; i++) {
       rec = (kind === 'expense') ? validExpenseRecord(arr[i], seen) : validCategoryRecord(arr[i], seen);
       if (rec === null) {
@@ -575,19 +597,24 @@ JR.model = (function () {
         if (maxCreated > meta.lastWriteAt) {
           notices.push('E-301');
           var w = persist(expenses, categories, settings);
-          if (w.ok) { notices = notices.concat(w.data.codes); }
+          if (w.ok) { notices = notices.concat(w.data.codes); mergeParams(noticeParams, w.data.codeParams); }   /* INT-36 */
         }
       }
 
       /* --- 신규 설치 또는 복구가 일어났으면 정리된 상태를 기록한다 --- */
       if (meta === null || freshInstall || rejected.length > 0 || settingsBroken) {
         var w2 = persist(expenses, categories, settings);
-        if (w2.ok) { notices = notices.concat(w2.data.codes); }
+        if (w2.ok) { notices = notices.concat(w2.data.codes); mergeParams(noticeParams, w2.data.codeParams); }   /* INT-36 */
         else { notices.push(w2.code); }
       }
 
       rebuildMonthIndex();
       ready = true;
+
+      /* E-605 — init() 은 부팅뿐 아니라 §6-8-3 복귀 재로드에서도 불립니다.
+       * 구독자에게 알리지 않으면 JR.model 만 갱신되고 화면은 이전 숫자를 그대로 보여 줍니다.
+       * (부팅 시점에는 아직 구독자가 없어 무해합니다 — JR.ui.init 이 뒤에 구독합니다.) */
+      notifyChange('bulk');
 
       return E.ok({
         mode: S.mode(),
@@ -603,6 +630,7 @@ JR.model = (function () {
       settings = defaultSettings();
       monthIndex = {};
       ready = true;
+      notifyChange('bulk');                              /* E-605 — 실패 복구 경로도 같습니다 */
       return E.ok({
         mode: S.mode(), notices: ['E-303'], noticeParams: {},
         expenseCount: 0, categoryCount: categories.length
@@ -649,7 +677,7 @@ JR.model = (function () {
       if (!w.ok) { return E.fail(w.code, {}); }
       expenses = next;
       notifyChange('expense');
-      return E.ok({ expense: expense, warnings: v.data.warnings.concat(w.data.codes) });
+      return E.ok({ expense: expense, warnings: v.data.warnings.concat(toWarnings(w.data)) });   /* INT-36 */
     } catch (e) {
       E.log('E-501', e);
       return E.fail('E-501', {});
@@ -678,7 +706,7 @@ JR.model = (function () {
       if (!w.ok) { return E.fail(w.code, {}); }
       expenses = next;
       notifyChange('expense');
-      return E.ok({ expense: updated, warnings: v.data.warnings.concat(w.data.codes) });
+      return E.ok({ expense: updated, warnings: v.data.warnings.concat(toWarnings(w.data)) });   /* INT-36 */
     } catch (e) {
       E.log('E-501', e);
       return E.fail('E-501', {});
@@ -778,7 +806,7 @@ JR.model = (function () {
   }
 
   function getCategoryMap() {
-    var map = {}, i, list = readOnly ? [] : categories;
+    var map = Object.create(null), i, list = readOnly ? [] : categories;   /* INT-42 */
     for (i = 0; i < list.length; i++) { map[list[i].id] = list[i]; }
     return E.ok({ map: map });
   }
@@ -986,19 +1014,36 @@ JR.model = (function () {
     return E.ok({});
   }
 
+  /* Q-067 판정(④ tech-lead · 2026-08-26) — 「전체 삭제」는 평상시 쓰기 경로와 **다른 종단 경로**를 탑니다.
+   * 근거: 화면설계 §S-04 2단계 확인 문구(= ui.js 의 최종 확인 대화상자)가 사용자에게 약속한 것은
+   *   「삭제 후에는 어떤 방법으로도 복구할 수 없습니다」 입니다.
+   *   앱 자신의 복구 경로(.bak · corrupt.* · rollback · rejected · draft)가 남아 있으면 그 약속이 깨집니다.
+   * 방법: jr. 네임스페이스의 키를 **먼저 전부 비운 뒤** 새 기본 상태를 씁니다.
+   *   주 데이터 키가 비어 있어야 store.js writeBak 이 이전 값을 .bak 에 남기지 않습니다
+   *   (store.js — prevExp·prevCat 이 둘 다 null 이면 백업을 만들지 않고 true 를 반환).
+   * 범위: 이 함수만 예외입니다. 평상시 저장 경로의 §3-4 4단계 .bak 백업은 그대로입니다.
+   * INT-27(5) 와의 관계: INT-27 이 rollback 을 보호한 범위는 **복구 사다리(§6-2 relieveStep)** 입니다.
+   *   사용자의 명시적 전체 삭제는 사다리가 아니며, 남겨 두면 model.init 의 트랜잭션 자동 복구가
+   *   다음 부팅에서 삭제한 기록을 통째로 되살립니다. → Q-091 로 ② 에 확인 요청(진행은 막지 않음). */
   function wipeAll() {
     try {
       if (readOnly) { return E.fail('E-307', {}); }
       var nextCategories = defaultCategories();
       var nextSettings = { selectedMonth: today().slice(0, 7), dismissedNotices: settings ? settings.dismissedNotices : [] };
+
+      var ks = S.keys(), i;
+      if (ks.ok) {
+        for (i = 0; i < ks.data.keys.length; i++) { S.removeRaw(ks.data.keys[i]); }
+      }
+
       var w = persist([], nextCategories, nextSettings);
-      if (!w.ok) { return E.fail('E-202', {}); }
       expenses = [];
       categories = nextCategories;
       settings = nextSettings;
       S.removeRaw(K_DRAFT);
       S.removeRaw(K_REJECTED);
       notifyChange('bulk');
+      if (!w.ok) { return E.fail('E-202', {}); }
       return E.ok({ categoryCount: categories.length });
     } catch (e) {
       E.log('E-501', e);
