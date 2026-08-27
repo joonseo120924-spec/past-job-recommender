@@ -6,3 +6,7 @@ __pycache__/
 venv/
 .env
 .DS_Store
+
+# agent-team
+agent-team/.env
+agent-team/.shipyard/
