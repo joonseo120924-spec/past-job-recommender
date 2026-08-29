@@ -11,7 +11,7 @@
 | 갱신 주체 | 원격 컨테이너 |
 | 조직 | **6본부 29명 + 감사실 2명 = 31명** (D-025) |
 | 사이클 | **없음 — 착수 대기.** 다음 = 사이클 3 |
-| 다음 단계 | 🔴 **감사실 2인의 일괄 감사 11건** → 통과 시 사이클 3 ① 전략 |
+| 다음 단계 | 🔴 **감사실 2인의 일괄 감사 12건** (D-035 추가) → 통과 시 사이클 3 ① 전략 |
 | 정기 실행 | 매일 07:07 KST — Claude Routine `trig_01R318Goz8QaBwiJ8nSPRjEi` (지정 대화창을 깨우는 방식) |
 | 정본 브랜치 | ⚠️ **분기 중** — `8tlqr8` ↔ `69oi8o` (B-06) |
 | 복구 지점 | `backup/pre-reset-2026-08-29` = 커밋 `0fd169f` (개편·초기화 직전 전체) |
@@ -85,6 +85,10 @@ ai-team/scripts/team-check.sh     # 지금 팀 정의가 어긋나지 않았는�
 `team_state` · `team_events`(append-only) · `team_blockers` · 뷰 `team_now`.
 새 대화창은 `python3 ai-team/scripts/supabase-sync.py status` 한 줄로 현재 상태·차단·최근 이벤트를 봅니다. 절차는 `ai-team/supabase.md`.
 - ✅ 왕복 실측 완료 (push 8/8 · status 일치 · pull 차이 0 · event · 뷰 조회)
+- ✅ **2026-08-29 (D-035) — 팀 정의까지 담습니다.** `push --team` · `restore` · `verify` 신설.
+  가짜 서버 왕복 실측: **80파일 push → 빈 디렉터리 restore → sha256 80/80 일치 → 복원본 `team-check.sh` 통과(31명)**
+  저장소 없는 창은 `ai-team/BOOTSTRAP.md` 붙여넣기 한 덩어리 (같은 시험에 포함)
+- 🔴 **B-08 — 이 컨테이너에 키가 없어 실제 업로드는 아직 못 했습니다.** 키를 넣고 `push --team` 1회 필요
 - ⚠️ `DELETE` 는 **204 를 돌려주지만 실제 삭제 0건** — 204 를 성공으로 읽지 마십시오
 - ⚠️ `supabase-sync.ps1` 은 미검증 (이 컨테이너에 PowerShell 없음)
 

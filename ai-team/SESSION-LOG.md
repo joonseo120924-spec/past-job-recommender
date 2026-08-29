@@ -2,6 +2,45 @@
 
 ---
 
+## 2026-08-29 (3) · 팀 정의를 슈퍼베이스에 — 어느 창에서든 복원 (D-035)
+
+**🟡 YELLOW**: 실제 업로드 미수행(키 없음, B-08) · D-035 감사 미수행(B-07 12건으로 증가)
+
+**지시 원문**: "슈퍼베이스에 ㄷ다른 창에서도 회의 실을 부르면 완벽하게 나오게 해놔"
+
+**환경**: Linux 원격 컨테이너 / 저장소 `past-job-recommender` / 브랜치 `claude/meeting-room-team-structure-knz8ob`
+이 세션은 팀이 없는 브랜치에서 시작했고, `origin/claude/notion-ai-agent-team-import-69oi8o` 를 **fast-forward** 로 인계받았습니다 (충돌·삭제 0, 앱 코드 0파일 변경).
+
+### 한 일
+- `supabase-sync.py` — `push --team` · `restore [--force] [--allow-incomplete]` · `verify` 신설. 팀 정의를 루트 기준 경로 키로 저장(예전 8개 키는 보존 → `supabase-sync.ps1` 호환)
+- `ai-team/BOOTSTRAP.md` — 저장소가 없는 창을 위한 붙여넣기 한 덩어리 (표준 라이브러리만)
+- `ai-team/scripts/selftest-supabase.py` — **키 없이** 가짜 PostgREST 로 왕복 실측
+- `checkpoint.sh` — `.claude/`·`ai-team/scripts/` 가 바뀐 턴에만 `--team`. 노션 미반영 검사의 **거짓 초록불** 시정
+
+### 실측 로그
+```
+push 80파일 → 빈 디렉터리 restore --force → sha256 80/80 일치
+복원본 team-check.sh → ✅ 31명, 형식·명부·경로·게이트 일치
+verify → ✅ 완전
+BOOTSTRAP.md 붙여넣기 덩어리 → 80파일 · 에이전트 31명 복원
+```
+
+### 하지 못한 것 (정직하게)
+| 항목 | 사유 |
+|---|---|
+| **실제 슈퍼베이스 업로드** | 이 컨테이너에 키가 없습니다 (B-08). 가짜 서버로만 실측했습니다 |
+| 이 창에서 31명 호출 | 정의는 세션 시작 때 읽힙니다. 파일은 갖췄으나 이 창에서 잡히는지는 **확인 불가** |
+| D-035 감사 | 감사실 2인 미호출 — B-07 에 묶어 **12건** |
+| 노션 반영 | 큐 `2026-08-29-7.md` 로 남김 |
+
+### 다음 세션이 이어받을 지점
+1. **키를 넣고 `push --team` 1회** → `verify` 가 ✅ 나오면 B-08 해소. 그때부터 다른 창은 `restore` 또는 BOOTSTRAP 한 덩어리로 팀을 받습니다
+2. **B-06 브랜치 일원화** — 이 세션 결과는 `claude/meeting-room-team-structure-knz8ob` 에 있습니다. `69oi8o` 로 합칠지 사용자 결정 필요
+3. 감사실 2인의 **일괄 감사 12건** (D-021 · D-025~D-035) — 3~4건씩 나눠 호출
+4. 오늘 발견한 **게이트 판본 드리프트 4곳** 을 감사 입력으로 제출: `team-rules.md:74-75`(8항목/5자료), `tech-lead.md:3`, `tech-lead.md:50`, `qa-lead.md:3`. `team-check.sh` 가 본문 제목만 보아 놓쳤습니다
+
+---
+
 ## 2026-08-29 (2) · 초기화 + 조직 개편 v3 — 20명 → 31명
 
 **🟡 YELLOW**: **D-025 개편은 감사 미수행** (D-014 요건 ③ 미충족) · D-021 도 ③ 미충족인 채 반영 · 마스터는 축소를 권했으나 사용자가 확대를 택함
