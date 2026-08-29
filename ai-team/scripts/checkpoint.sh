@@ -67,7 +67,9 @@ if [ -n "$(git log --branches --not --remotes --oneline 2>/dev/null)" ]; then
 fi
 
 # ── 3. 노션 큐 (반영은 도구가 있는 세션에서만 가능하므로 '확인'까지)
-PENDING=$(grep -l '^상태: *대기' ai-team/notion-queue/*.md 2>/dev/null | wc -l | tr -d ' ')
+# 큐 파일은 "상태: ⏳ 미반영" 으로 씁니다. 예전 검사는 '대기' 만 찾아 **항상 0건**으로 보고했습니다
+# — 실제로는 미반영 1건이 남아 있는데 초록불이 켜졌습니다 (D-035 에서 발견·시정).
+PENDING=$(grep -lE '^상태:.*(미반영|대기|⏳)' ai-team/notion-queue/*.md 2>/dev/null | wc -l | tr -d ' ')
 if [ "$PENDING" = "0" ]; then
   NOTION="미반영 0건"
 else
