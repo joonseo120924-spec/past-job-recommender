@@ -58,9 +58,11 @@ def die(msg, code=1):
 def load_config():
     url, key = os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_KEY")
     if (not url or not key) and os.path.exists(ENV_FILE):
-        with open(ENV_FILE, encoding="utf-8") as fh:
+        # 메모장·PowerShell 5.1 은 UTF-8 에 BOM 을 붙입니다. BOM 이 남으면 첫 줄 키가
+        # "\ufeffSUPABASE_URL" 이 되어 조용히 인식되지 않습니다 — encoding 으로 흡수합니다.
+        with open(ENV_FILE, encoding="utf-8-sig") as fh:
             for line in fh:
-                line = line.strip()
+                line = line.strip().lstrip("\ufeff")
                 if not line or line.startswith("#") or "=" not in line:
                     continue
                 k, v = line.split("=", 1)
