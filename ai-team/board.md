@@ -17,7 +17,7 @@
 | B-03 | Routine 프롬프트 교체 | 🔴 **미해소** — 이 환경에서 Routine 을 수정할 수 없습니다. `ai-team/routine-prompt.md` 의 교체안을 사용자가 claude.ai Routines UI 에 반영해야 합니다 |
 | B-04 | `handoff/03·04` 필독 명시 없음 | ✅ **해소** — `tech-lead`·`qa-lead` 착수 전 필독 신설, `gtm-lead` 강화 |
 | B-05 | `daily-app` 4-1 ↔ 5 순서 결함 | ✅ **해소** — STATE 갱신을 노션 정리 **뒤**(6단계)로 이동 |
-| B-06 | 브랜치 분기 (`8tlqr8` ↔ `69oi8o`) | 🔴 **미해소** — 사용자 결정 필요 |
+| B-06 | 브랜치 **3갈래** 분기 (`8tlqr8` · `69oi8o` · `knz8ob`) | 🔴 **미해소** — 실제 작업과 자동 푸시는 `claude/meeting-room-team-structure-knz8ob`. `8tlqr8` 은 20명 조직이며 Routine 이 그쪽을 봅니다. 사용자 결정 필요 |
 | B-07 | **D-025 개편 감사 미수행** | 🔴 신규 — 감사실 2인 호출 필요 (D-035 포함 **12건**) |
 | B-08 | **슈퍼베이스 키 미설정** | 🔴 신규 — 메커니즘(D-035)은 완성·실측했으나 이 컨테이너에 `SUPABASE_URL`·`SUPABASE_KEY` 가 없어 **실제 업로드를 못 했습니다.** 키를 넣고 `push --team` 1회를 돌려야 다른 창에서 나옵니다 |
 

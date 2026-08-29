@@ -51,6 +51,13 @@ if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
   git add -A >/dev/null 2>&1
   MSG="[checkpoint] 자동 저장 — $(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M KST')"
   [ -n "$REASON" ] && MSG="$MSG · $REASON"
+  # git add -A 는 이 세션이 의도하지 않은 변경까지 싣습니다. 2026-08-30 에 실제로
+  # 감사관의 검증 실행이 설정 파일을 바꿨고 그대로 푸시됐습니다. 막을 수는 없어도
+  # **무엇이 실렸는지는 남깁니다** — 조용히 섞여 들어가는 것이 사고였습니다.
+  MSG="$MSG
+
+실린 파일 ${CHANGED}개:
+$(git diff --cached --name-status | sed 's/^/  /')"
   if git commit -q -m "$MSG" >/dev/null 2>&1; then GIT="✓ 커밋 ${CHANGED}건"; else GIT="✗ 커밋 실패"; fi
 else
   GIT="변경 없음"

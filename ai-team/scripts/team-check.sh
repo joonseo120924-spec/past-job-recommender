@@ -65,6 +65,30 @@ n=$(grep -c '`\(approvals\|questions\|decisions\|SESSION-LOG\)\.md`' "$A"/*.md 2
 grep -q '10항목' "$A/tech-lead.md" || bad "tech-lead 착수 게이트가 10항목이 아님 (team-org.md 와 불일치)"
 grep -q '6자료'  "$A/qa-lead.md"  || bad "qa-lead 착수 자료가 6자료가 아님 (team-org.md 와 불일치)"
 
+# 6-1) 게이트 숫자가 **정본끼리** 일치하는가 (D-036)
+#      6번은 본문에 '10항목' 이 있기만 하면 통과시켰습니다. 그래서 최우선 정본
+#      team-rules.md 와 description 줄이 옛 숫자로 남아 있어도 초록불이 켜졌고,
+#      2026-08-30 감사에서 치명-2·치명-3 으로 지적됐습니다.
+R=.claude/team-rules.md
+grep -q '10항목' "$R" || bad "규정 정본 team-rules.md 에 10항목이 없음 — 게이트 정본은 이 파일입니다"
+grep -q '6자료'  "$R" || bad "규정 정본 team-rules.md 에 6자료가 없음"
+grep -q '호환성 실측표' "$R" || bad "규정 정본 team-rules.md 의 ⑤ QA 완료에 호환성 실측표가 없음"
+grep -q '② 설계 완료' "$R" || bad "규정 정본 team-rules.md 에 ② 설계 완료 게이트가 없음"
+grep -q '⑥ 출시 착수' "$R" || bad "규정 정본 team-rules.md 에 ⑥ 출시 착수 게이트가 없음"
+# 수치는 정본 한 곳에만. team-org.md 에 다시 표가 생기면 드리프트가 재발합니다
+# 표의 줄(| 로 시작)만 봅니다. 경위 설명에서 옛 값을 인용하는 것은 정상입니다
+grep -E '^\|.*(8항목|5자료)' "$R" >/dev/null && bad "규정 정본 **표**에 옛 수치(8항목/5자료)가 남아 있음"
+# description 줄 — 마스터가 누구를 부를지 고를 때 읽는 줄입니다. 본문만 고치면 여기 남습니다
+grep '^description:' "$A/tech-lead.md" | grep -q '8항목' && bad "tech-lead description 이 아직 8항목"
+grep '^description:' "$A/qa-lead.md"   | grep -q '5자료' && bad "qa-lead description 이 아직 5자료"
+grep -q 'QA 착수 6자료' "$A/tech-lead.md" || bad "tech-lead 의 handoff 지시가 6자료가 아님 — qa-lead 는 6자료를 요구합니다"
+# 파트장이 부하 인원을 옛 숫자로 전제하지 않는가
+grep -q '두 실무자\|두 산출물' "$A/product-planner.md" "$A/design-lead.md" && bad "파트장 정의가 실무자를 옛 인원(2인)으로 전제"
+# 감사관 둘 다 산출 경로 절이 있어야 합니다 (B-02 부류)
+for f in team-master evidence-auditor; do
+  grep -q '^## 산출물' "$A/$f.md" || bad "$f 에 산출 경로 절이 없음 — 접두사 없이 쓰면 루트에 떨어집니다"
+done
+
 # 7) 총괄 호칭 (D-034) — 역사 기록(decisions.md)은 소급 수정하지 않으므로 제외
 [ -f .claude/master.md ] || bad "정체성 정본 .claude/master.md 가 없습니다"
 # 파일명에 남아 있으면 실패

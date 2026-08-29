@@ -28,7 +28,7 @@
 ⏰ 매일 07:07(KST) 정기 실행입니다. 이 대화창에서 진행합니다.
 
 1. 브랜치를 맞춥니다:
-   git fetch origin claude/notion-ai-team-import-8tlqr8 && git checkout claude/notion-ai-team-import-8tlqr8 && git pull origin claude/notion-ai-team-import-8tlqr8
+   git fetch origin claude/meeting-room-team-structure-knz8ob && git checkout claude/meeting-room-team-structure-knz8ob && git pull origin claude/meeting-room-team-structure-knz8ob
 2. `/daily-app` 스킬을 실행합니다. 절차·규정·노션 동기화는 전부 그 스킬과
    스킬이 가리키는 정본에 있습니다. 여기에 복제하지 않습니다.
 3. 사용자가 없다는 전제로 진행하고 멈춰서 대기하지 않습니다.
@@ -46,7 +46,7 @@
 
 ## 0. 어제까지의 상태를 먼저 읽는다
 - 저장소 브랜치를 맞춥니다 (팀 파일은 이 브랜치에만 있음):
-  `git fetch origin claude/notion-ai-team-import-8tlqr8 && git checkout claude/notion-ai-team-import-8tlqr8 && git pull origin claude/notion-ai-team-import-8tlqr8`
+  `git fetch origin claude/meeting-room-team-structure-knz8ob && git checkout claude/meeting-room-team-structure-knz8ob && git pull origin claude/meeting-room-team-structure-knz8ob`
 - 정본 4개: `.claude/team-rules.md`(최우선) · `.claude/team-org.md` · `.claude/master-doctrine.md` · `ai-team/SESSION-LOG.md`
 - 노션 도구가 이 실행에 **있으면** 「📓 작업 일지」(id `3b750286-df80-8173-a09e-f8dc7712e713`)를 fetch 해 어제 항목의 **"내일 이어받을 지점"** 을 확인합니다. **없으면** 저장소 파일만으로 진행합니다 — 저장소가 실제 상태, 노션은 기록입니다.
 
@@ -56,7 +56,7 @@
 - 미결 Q-001(FocusNoise 산출물이 저장소에 없어 ⑤ 재개 불가): 사용자 답변이 있으면 따르고, 없으면 GREEN으로 결정한 뒤 `decisions.md` 에 기록합니다.
 
 ## 2. 마감 — 저장소 (생략 불가)
-`board.md` · `cycle.md` · `SESSION-LOG.md` 갱신 → **커밋 후 `claude/notion-ai-team-import-8tlqr8` 브랜치로 푸시.** 커밋하지 않으면 컨테이너와 함께 전부 소멸합니다. PR은 사용자가 요청하지 않는 한 만들지 않습니다.
+`board.md` · `cycle.md` · `SESSION-LOG.md` 갱신 → **커밋 후 `claude/meeting-room-team-structure-knz8ob` 브랜치로 푸시.** 커밋하지 않으면 컨테이너와 함께 전부 소멸합니다. PR은 사용자가 요청하지 않는 한 만들지 않습니다.
 
 ## 3. 마감 — 노션 정리 (생략 불가)
 절차 정본은 **`ai-team/notion-sync.md`** 입니다. 반드시 그 파일을 읽고 따르십시오. 요약하면:
