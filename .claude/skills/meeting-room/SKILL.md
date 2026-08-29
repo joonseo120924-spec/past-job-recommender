@@ -153,9 +153,10 @@ ai-team/scripts/roster.sh --unit all      # 킥오프·개편·감사 — 전 �
 | 감사 판정 | `--kind 감사` |
 
 ```bash
-python3 ai-team/scripts/supabase-sync.py event --kind 승인 \
-  --actor qa-lead --stage "⑤ 품질" --title "..." --ref "..."
+ai-team/scripts/event.sh 승인 qa-lead "…" D-0NN     # 1차: 파일. 키 없이도 돕니다
 ```
+`event.sh` 가 `ai-team/events.log` 에 먼저 쓰고, 키가 있으면 슈퍼베이스까지 이어서 반영합니다.
+**2차가 실패해도 1차 기록은 남습니다** — 2026-08-30 감사 치명-2 로 순서를 뒤집었습니다.
 
 노션 도구가 이 세션에 붙어 있으면 같은 내용을 「📓 작업 일지」에도 즉시 반영합니다. 없으면 큐에 남기고 **못 했다고 적습니다.**
 

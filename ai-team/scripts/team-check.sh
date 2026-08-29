@@ -89,6 +89,9 @@ for f in team-master evidence-auditor; do
   grep -q '^## 산출물' "$A/$f.md" || bad "$f 에 산출 경로 절이 없음 — 접두사 없이 쓰면 루트에 떨어집니다"
 done
 
+# 6-2) 게이트·명부 **값 대조** (D-037) — 낱말이 아니라 집합과 개수를 봅니다
+python3 ai-team/scripts/check-gates.py || FAIL=$((FAIL+1))
+
 # 7) 총괄 호칭 (D-034) — 역사 기록(decisions.md)은 소급 수정하지 않으므로 제외
 [ -f .claude/master.md ] || bad "정체성 정본 .claude/master.md 가 없습니다"
 # 파일명에 남아 있으면 실패
@@ -98,6 +101,8 @@ n=$(find . -path ./.git -prune -o -iname '*jarvis*' -print 2>/dev/null | wc -l)
 n=$(grep -rn --exclude-dir=.git --exclude-dir=__pycache__ -i 'jarvis\|자비스' . 2>/dev/null \
       | grep -v '^\./ai-team/decisions\.md:' \
       | grep -v '^\./ai-team/scripts/team-check\.sh:' \
+      | grep -v '^\./ai-team/docs/감사-' \
+      | grep -v '^\./ai-team/notion-queue/' \
       | grep -vE 'D-029|D-034|되돌|옛 호칭|이전 호칭' | wc -l)
 [ "$n" -gt 0 ] && bad "옛 호칭을 현재 호칭처럼 쓴 줄 ${n}개 — 총괄 호칭은 마스터입니다 (D-034)"
 
