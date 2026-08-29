@@ -6,10 +6,12 @@
 #   roster.sh              명단만
 #   roster.sh --unit 1     ① 전략이 발언하는 날의 출석부 (🗣/⏳/👁)
 #   roster.sh --unit all   전원 발언 (킥오프·개편·감사)
+#   roster.sh --full       전원 상세 — 파트장/직원 · 모델(opus·sonnet) · 도구 · 하는 일
 set -uo pipefail
 cd "$(git rev-parse --show-toplevel 2>/dev/null)" 2>/dev/null || exit 0
 [ -d .claude/agents ] || { echo "⚠️ .claude/agents 없음 — 팀이 이 체크아웃에 없습니다"; exit 0; }
 
+if [ "${1:-}" = "--full" ]; then FULL=1 python3 "$(dirname "$0")/roster-full.py"; exit 0; fi
 UNIT="${2:-}"; [ "${1:-}" = "--unit" ] || UNIT=""
 N=$(ls .claude/agents/*.md 2>/dev/null | wc -l | tr -d ' ')
 if [ -n "$UNIT" ]; then
