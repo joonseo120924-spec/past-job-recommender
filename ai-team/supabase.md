@@ -78,7 +78,19 @@ python3 ai-team/scripts/supabase-sync.py event --kind 결정 \
 3. 작업 후 `push` + `event` 로 남김
 4. 노션은 종전대로 `notion-sync.md` 규약을 따릅니다 (사람이 읽는 기록)
 
+## 검증 기록 (2026-08-29, 실측)
+| 항목 | 결과 |
+|---|---|
+| 테이블 생성 | ✅ 사용자가 대시보드에서 `schema.sql` 실행 |
+| `push` | ✅ 8/8 업로드 (`team_state`) + `team_events` 동기화 기록 |
+| `status` | ✅ 8/8 일치 · 차단 6건 · 이벤트 2건 조회 |
+| `pull` | ✅ 차이 0 (덮어쓰기 없음) |
+| `event` | ✅ 기록 1건 적재 |
+| 뷰 `team_now` | ✅ 갱신시각·브랜치·열린차단 6·마지막 이벤트 반환 |
+| 기록 삭제 방어 | ✅ `DELETE /team_events` → **HTTP 204 지만 실제 삭제 0건.** 이벤트 2건 그대로 남음 |
+
+> ⚠️ **204 를 성공으로 읽지 마십시오.** PostgREST 는 RLS 가 대상 행을 하나도 보여주지 않아도 204 를 돌려줍니다. 삭제가 막힌 것이 맞지만, 응답 코드만으로는 구별되지 않습니다.
+
 ## 아직 검증하지 못한 것 (정직하게)
-- **테이블 생성 후의 실제 동작(push/pull/event)은 미검증입니다.** 이 세션에서는 테이블이 없어 `status` 의 **오류 경로만** 실제로 확인했습니다 (`PGRST205` → 안내 메시지, exit 1)
-- `supabase-sync.ps1` 은 **실행해 보지 못했습니다.** 이 컨테이너에 PowerShell 이 없습니다(`pwsh`·`powershell` 부재). `team-sync.ps1` 과 같은 한계입니다 — 문법·구조 검토만 했습니다
+- `supabase-sync.ps1` 은 **실행해 보지 못했습니다.** 이 컨테이너에 PowerShell 이 없습니다(`pwsh`·`powershell` 부재). `team-sync.ps1` 과 같은 한계입니다 — 문법·구조 검토만 했습니다. **Windows 에서 첫 실행 시 확인이 필요합니다**
 - 07:07 Routine 이 이 스크립트를 부르게 하는 것은 **아직 하지 않았습니다.** Routine 프롬프트 교체는 차단 3번(사용자 지시 필요)에 묶여 있습니다
