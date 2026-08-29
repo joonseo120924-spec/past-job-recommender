@@ -8,6 +8,23 @@
             "type": "command",
             "command": "cat ai-team/STATE.md 2>/dev/null || true",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "ai-team/scripts/roster.sh 2>/dev/null || true",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ai-team/scripts/checkpoint.sh --hook 2>/dev/null || true",
+            "timeout": 90,
+            "statusMessage": "체크포인트 — 슈퍼베이스·GitHub 저장 중"
           }
         ]
       }
