@@ -1,0 +1,11 @@
+{
+  "hotkey": "",
+  "factor": 6.0,
+  "floor": 1500.0,
+  "device": null,
+  "greeting": "네, 사장님.",
+  "boot_line": "자비스 기동했습니다. 박수 두 번으로 부르십시오.",
+  "sleep_line": "대기 모드로 전환합니다.",
+  "speak": true,
+  "read_reports": true
+}
