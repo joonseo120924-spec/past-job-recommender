@@ -27,14 +27,21 @@ done
 SB="—"; GIT="—"; NOTION="—"; CHANGED=0
 
 # ── 1. 슈퍼베이스 (항상)
+#    팀 정의(.claude · 스크립트)가 이번에 바뀌었으면 --team 으로 함께 올립니다.
+#    그래야 다른 창이 restore 만으로 **지금의** 팀을 그대로 받습니다 (D-035).
+TEAMFLAG=""
+if [ -n "$(git status --porcelain -- .claude ai-team/scripts ai-team/BOOTSTRAP.md 2>/dev/null)" ] \
+   || git log -1 --name-only --format= 2>/dev/null | grep -qE '^(\.claude/|ai-team/scripts/)'; then
+  TEAMFLAG="--team"
+fi
 if [ -f ai-team/supabase/.env ] || [ -n "${SUPABASE_URL:-}" ]; then
-  if python3 ai-team/scripts/supabase-sync.py push >/dev/null 2>&1; then
-    SB="✓ push"
+  if python3 ai-team/scripts/supabase-sync.py push $TEAMFLAG >/dev/null 2>&1; then
+    SB="✓ push${TEAMFLAG:+ (팀 정의 포함)}"
   else
     SB="✗ 실패(키·네트워크·테이블 확인)"
   fi
 else
-  SB="⏭ 설정 없음(.env)"
+  SB="⏭ 설정 없음(.env) — 다른 창에서 팀을 못 받습니다. ai-team/BOOTSTRAP.md 0절"
 fi
 
 # ── 2. GitHub (변경이 있을 때만)
