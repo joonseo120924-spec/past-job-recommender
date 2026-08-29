@@ -23,6 +23,7 @@
 | `questions.md` | 팀원 간 질문 · 답변 (Q-001~) |
 | `RESTORE.md` | 다른 환경에서 팀을 복원하는 방법 |
 | `notion-sync.md` | **노션 정리 규약 (매일 필수)** |
+| `supabase.md` | **슈퍼베이스 상태 동기화** — 어느 대화창에서도 같은 현재 상태 (D-023) |
 | `notion-queue/` | 노션에 반영 대기 중인 날짜별 기록 |
 | `apps/<날짜>/` | 앱별 산출물 (`docs/` `handoff/` `src/`) |
 

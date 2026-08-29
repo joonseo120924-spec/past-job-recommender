@@ -63,6 +63,11 @@ Windows 로컬에서는 **08-10 에 FIX-1 로 실체가 이미 확인**돼 있�
 
 Windows에서 최신 상태를 받는 법 → `ai-team/local-windows.md`
 
+## 슈퍼베이스 (D-023 · 2026-08-29 신설)
+`team_state` · `team_events` · `team_blockers` · 뷰 `team_now`. 새 대화창은 `python3 ai-team/scripts/supabase-sync.py status` 한 줄로 현재 상태·차단·최근 이벤트를 봅니다. 절차는 `ai-team/supabase.md`.
+- ⏳ **테이블 미생성** — 사용자가 `ai-team/supabase/schema.sql` 을 대시보드 SQL Editor 에서 한 번 실행해야 합니다 (publishable 키로는 DDL 불가)
+- 검증된 것: 컨테이너 → Supabase 도달 확인, `status` 오류 경로 실측. **push/pull/event 실동작과 `.ps1` 실행은 미검증**
+
 ## 노션 동기화
 **append 완료 ≠ 동기화 완료.** 그날 항목 append **와** 상단 「현재 상태」 표 갱신이 **둘 다** 끝나야 그 날짜가 반영된 것입니다 (`notion-sync.md` 2-1).
 - 미반영 큐: **0건** — `2026-08-29.md` 항목 append + 상단 표 6칸 갱신 둘 다 완료

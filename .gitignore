@@ -9,3 +9,6 @@ venv/
 
 # 로컬 동기화 스크립트 로그 (기기별)
 ai-team/.local-sync.log
+
+# 슈퍼베이스 키 — 이 저장소는 공개이므로 절대 커밋하지 않습니다
+ai-team/supabase/.env
