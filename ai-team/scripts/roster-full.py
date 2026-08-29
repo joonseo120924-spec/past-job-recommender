@@ -59,7 +59,7 @@ if not rows:
     print("⚠️ .claude/agents 가 비어 있습니다 — 팀이 이 체크아웃에 없습니다"); sys.exit(0)
 
 op = sum(1 for m, _ in rows.values() if m == "opus")
-print("🎩 총괄 자비스(JARVIS) — 사용자와 대화하는 유일한 창구 · 메인 스레드 본인 (서브에이전트 아님)")
+print("🎩 총괄 마스터 — 사용자와 대화하는 유일한 창구 · 메인 스레드 본인 (서브에이전트 아님)")
 print("👥 AI 앱 개발팀 — 총 %d명   (opus %d · sonnet %d)" % (len(rows), op, len(rows) - op))
 print("   모델은 별칭입니다: opus → claude-opus-5 · sonnet → claude-sonnet-5")
 print("   도구 «전체» = tools: 줄 없음 → 전체 상속. 브라우저로 직접 실행·검증할 수 있어야 하는 역할입니다")

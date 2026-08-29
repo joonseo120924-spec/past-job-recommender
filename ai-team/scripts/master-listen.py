@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-자비스 — 박수 두 번에 깨어나는 음성 비서 (Windows 상주)
+마스터 — 박수 두 번에 깨어나는 음성 비서 (Windows 상주)
 
     pip install sounddevice
-    python ai-team/scripts/jarvis.py --setup      1. 마이크·음성 점검
-    python ai-team/scripts/jarvis.py --tune       2. 박수 감도 보정
-    python ai-team/scripts/jarvis.py              3. 기동
+    python ai-team/scripts/master-listen.py --setup      1. 마이크·음성 점검
+    python ai-team/scripts/master-listen.py --tune       2. 박수 감도 보정
+    python ai-team/scripts/master-listen.py              3. 기동
 
 무엇을 하는가
     마이크를 계속 듣다가 **박수 두 번**을 감지하면
@@ -30,7 +30,7 @@ GAP_MIN, GAP_MAX = 0.15, 1.20     # 두 박수 사이 허용 간격
 COOLDOWN = 3.0                    # 발동 후 재무장
 
 ROOT = Path(__file__).resolve().parents[2]
-CFG_PATH = ROOT / "ai-team" / "scripts" / "jarvis.config.json"
+CFG_PATH = ROOT / "ai-team" / "scripts" / "master-listen.config.json"
 VOICE_OUT = ROOT / "ai-team" / "voice-out"
 
 DEFAULTS = {
@@ -39,7 +39,7 @@ DEFAULTS = {
     "floor": 1500.0,
     "device": None,
     "greeting": "네, 사장님.",
-    "boot_line": "자비스 기동했습니다. 박수 두 번으로 부르십시오.",
+    "boot_line": "마스터 기동했습니다. 박수 두 번으로 부르십시오.",
     "sleep_line": "대기 모드로 전환합니다.",
     "speak": True,
     "read_reports": True,
@@ -221,8 +221,8 @@ def boot_check(cfg):
 def mode_setup(cfg):
     ok = boot_check(cfg)
     print("%s말하기 시험 — 소리가 들려야 정상입니다.%s" % (C["b"], C["off"]))
-    speak("자비스입니다. 소리가 들리시면 준비가 된 것입니다.", cfg["speak"], block=True)
-    print("\n다음 단계:  python ai-team/scripts/jarvis.py --tune")
+    speak("마스터입니다. 소리가 들리시면 준비가 된 것입니다.", cfg["speak"], block=True)
+    print("\n다음 단계:  python ai-team/scripts/master-listen.py --tune")
     if not ok:
         print("%s마이크부터 해결하셔야 합니다.%s" % (C["red"], C["off"]))
 
@@ -297,12 +297,12 @@ def mode_run(cfg):
                     print("   %s받아쓰기 시작 (%s) — 말씀하십시오%s"
                           % (C["dim"], cfg["hotkey"], C["off"]))
     except KeyboardInterrupt:
-        print("\n%s자비스 대기 모드.%s (오늘 %d회 응답)" % (C["dim"], C["off"], woke))
+        print("\n%s마스터 대기 모드.%s (오늘 %d회 응답)" % (C["dim"], C["off"], woke))
         speak(cfg["sleep_line"], cfg["speak"], block=True)
 
 
 def main():
-    ap = argparse.ArgumentParser(description="자비스 — 박수 두 번에 깨어나는 음성 비서")
+    ap = argparse.ArgumentParser(description="마스터 — 박수 두 번에 깨어나는 음성 비서")
     ap.add_argument("--setup", action="store_true", help="마이크·음성 점검")
     ap.add_argument("--tune", action="store_true", help="박수 감도 보정")
     ap.add_argument("--say", help="이 문장을 말해 보기 (음성 시험)")

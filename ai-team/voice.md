@@ -41,14 +41,14 @@ Claude Code 의 음성 입력은 **키를 눌러 시작**합니다. 두 가지 �
 ## ❌ 박수 두 번 · 상시 마이크 — 왜 안 되는가
 Claude Code 에는 **웨이크워드도, 상시 청취도, 소리 이벤트 감지도 없습니다.** 음성 입력은 항상 **키 입력으로 시작**합니다. 이것은 설정으로 바꿀 수 있는 항목이 아니라 기능의 부재입니다.
 
-### ✅ 그래서 직접 만들었습니다 — `jarvis.py` (D-030, 사용자 지시)
+### ✅ 그래서 직접 만들었습니다 — `master-listen.py` (D-030, 사용자 지시)
 Claude Code 가 못 하는 부분을 **바깥에서** 채웁니다. 마이크를 계속 듣다가 박수 두 번을 감지해 **단축키를 눌러 줍니다.**
 
 ```bash
 pip install sounddevice                                   # 0단계 (Python 필요)
-python ai-team/scripts/jarvis.py --tune         # 1단계 소리 크기 보기
-python ai-team/scripts/jarvis.py --setup             # 2단계 감지만 (키 안 누름)
-python ai-team/scripts/jarvis.py --key ctrl+shift+v  # 3단계 실제 사용
+python ai-team/scripts/master-listen.py --tune         # 1단계 소리 크기 보기
+python ai-team/scripts/master-listen.py --setup             # 2단계 감지만 (키 안 누름)
+python ai-team/scripts/master-listen.py --key ctrl+shift+v  # 3단계 실제 사용
 ```
 
 **감지 방식** — 두 조건을 **모두** 요구합니다.
@@ -69,27 +69,27 @@ python ai-team/scripts/jarvis.py --key ctrl+shift+v  # 3단계 실제 사용
 
 **어떤 키를 줘야 하나**: Claude Code 의 음성 입력 단축키입니다. `/config` 에서 voice 를 켠 뒤 확인하시고, 그 조합을 `--key` 에 넣으십시오. 모르면 `--test` 로 감지만 확인하셔도 됩니다.
 
-## ✅ 음성 응답 루프 — `jarvis-voice.ps1` (D-030)
-박수 → 말로 명령 → **자비스가 음성으로 답하는** 한 바퀴입니다.
+## ✅ 음성 응답 루프 — `master-voice.ps1` (D-030)
+박수 → 말로 명령 → **마스터가 음성으로 답하는** 한 바퀴입니다.
 
 ```
-👏👏  박수 두 번        jarvis.py 가 단축키 전송
+👏👏  박수 두 번        master-listen.py 가 단축키 전송
 🎙️  말로 명령          Claude Code 받아쓰기 (tap 모드)
-🎩  자비스가 답함       화면 + ai-team/voice-out/<시각>-<주제>.txt 원고 작성 → 커밋·푸시
-🔊  낭독               사장님 PC 의 jarvis-voice.ps1 이 pull → SAPI 로 읽음
+🎩  마스터가 답함       화면 + ai-team/voice-out/<시각>-<주제>.txt 원고 작성 → 커밋·푸시
+🔊  낭독               사장님 PC 의 master-voice.ps1 이 pull → SAPI 로 읽음
 ```
 
 ```powershell
-.\ai-team\scripts\jarvis-voice.ps1                # 20초마다 확인, 새 보고문 낭독
-.\ai-team\scripts\jarvis-voice.ps1 -Once          # 한 번만
-.\ai-team\scripts\jarvis-voice.ps1 -IntervalSec 10 -Rate 1
+.\ai-team\scripts\master-voice.ps1                # 20초마다 확인, 새 보고문 낭독
+.\ai-team\scripts\master-voice.ps1 -Once          # 한 번만
+.\ai-team\scripts\master-voice.ps1 -IntervalSec 10 -Rate 1
 ```
 - 이미 읽은 파일은 다시 읽지 않습니다 (`.spoken`, git 추적 안 함)
 - **읽은 뒤에** 기록하므로 중간에 끊기면 다시 읽습니다 (놓치는 것보다 낫습니다)
 - **지연은 폴링 주기만큼입니다. 실시간이 아닙니다**
 - ⚠️ **미검증** — PowerShell 없는 컨테이너에서 작성
 
-**낭독 원고 규칙** (자비스가 지킵니다): 표·코드블록·기호 없이 · 짧은 문장 · 30초 안팎 · "자비스입니다."로 시작. 자세한 건 화면으로.
+**낭독 원고 규칙** (마스터가 지킵니다): 표·코드블록·기호 없이 · 짧은 문장 · 30초 안팎 · "마스터입니다."로 시작. 자세한 건 화면으로.
 
 ## ⚠️ 왜 원격에서 직접 소리를 못 내는가
 ```
@@ -129,20 +129,20 @@ espeak · espeak-ng · say · festival · spd-say · pwsh · powershell → 전�
 |---|---|
 | 하는 일 | 브리핑을 **소리로 읽음** · 팀 31명 명단 · 차단 목록 · **말을 글자로 받아씀** |
 | 필요한 것 | 브라우저만. Python·PowerShell 불필요 |
-| 못 하는 일 | 받아쓴 말을 **자비스에게 직접 못 보냅니다** — 아티팩트는 바깥으로 요청을 보낼 수 없습니다(CSP). 복사해 붙여넣거나 Claude 앱에 대고 말하십시오 |
+| 못 하는 일 | 받아쓴 말을 **마스터에게 직접 못 보냅니다** — 아티팩트는 바깥으로 요청을 보낼 수 없습니다(CSP). 복사해 붙여넣거나 Claude 앱에 대고 말하십시오 |
 | 아이폰 | 소리는 화면을 한 번 누른 뒤 납니다. 받아쓰기는 사파리에서 안 될 수 있습니다 |
-| 갱신 | 상태가 바뀌면 **자비스가 다시 발행**합니다 (페이지가 스스로 갱신되지는 않습니다) |
+| 갱신 | 상태가 바뀌면 **마스터가 다시 발행**합니다 (페이지가 스스로 갱신되지는 않습니다) |
 
-원본: `ai-team/console/jarvis-console.html` (저장소에 있으므로 함께 버전 관리됩니다)
+원본: `ai-team/console/master-console.html` (저장소에 있으므로 함께 버전 관리됩니다)
 
 ## 세 갈래 정리 — 무엇을 쓰면 되나
 | 상황 | 쓸 것 |
 |---|---|
-| 컴퓨터에서 손 안 대고 시작 | 👏 `jarvis.py` (Python 필요) |
+| 컴퓨터에서 손 안 대고 시작 | 👏 `master-listen.py` (Python 필요) |
 | 컴퓨터에서 키 한 번이면 충분 | ⌨️ `tap` 모드만 켜기 — **가장 간단** |
 | 핸드폰에서 말하기 | 📱 claude.ai 앱 마이크 — **아무것도 필요 없음** |
 | 어디서든 듣기 | 🎩 음성 브리핑 콘솔 (브라우저) |
-| Windows 에서 자동 낭독 | 🔊 `jarvis-voice.ps1` (상주) |
+| Windows 에서 자동 낭독 | 🔊 `master-voice.ps1` (상주) |
 
 ## 정직하게
 「항상 마이크」와 「박수 두 번」은 **지금 구조에서 제공할 수 없습니다.** 되는 척하지 않습니다.

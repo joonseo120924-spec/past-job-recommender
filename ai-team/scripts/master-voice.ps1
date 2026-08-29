@@ -1,13 +1,13 @@
 ﻿<#
-  자비스 음성 응답 — 새 보고문을 받아 소리 내어 읽습니다 (Windows 로컬 상주)
+  마스터 음성 응답 — 새 보고문을 받아 소리 내어 읽습니다 (Windows 로컬 상주)
 
-    .\ai-team\scripts\jarvis-voice.ps1              20초마다 pull → 새 보고문 낭독
-    .\ai-team\scripts\jarvis-voice.ps1 -Once        한 번만
-    .\ai-team\scripts\jarvis-voice.ps1 -IntervalSec 10 -Rate 1
+    .\ai-team\scripts\master-voice.ps1              20초마다 pull → 새 보고문 낭독
+    .\ai-team\scripts\master-voice.ps1 -Once        한 번만
+    .\ai-team\scripts\master-voice.ps1 -IntervalSec 10 -Rate 1
 
   왜 이런 구조인가
-    자비스는 클라우드 컨테이너에 있어 **소리를 낼 수 없습니다** (TTS·오디오 장치 부재, 실측).
-    그래서 자비스는 보고문을 ai-team\voice-out\ 에 **파일로** 쓰고 푸시하고,
+    마스터는 클라우드 컨테이너에 있어 **소리를 낼 수 없습니다** (TTS·오디오 장치 부재, 실측).
+    그래서 마스터는 보고문을 ai-team\voice-out\ 에 **파일로** 쓰고 푸시하고,
     읽는 것은 이 PC 의 Windows SAPI 가 합니다. 지연은 폴링 주기만큼입니다.
 
   ⚠️ 미검증 — PowerShell 이 없는 컨테이너에서 작성됐습니다. 처음 실행 시 확인하십시오.
@@ -48,7 +48,7 @@ function Speak-New {
     if ($done -contains $f.Name) { continue }
     $text = (Get-Content $f.FullName -Raw -Encoding UTF8).Trim()
     if (-not $text) { Add-Content $Spoken $f.Name -Encoding UTF8; continue }
-    Write-Host "`n🎩 자비스 보고 — $($f.Name)" -ForegroundColor Cyan
+    Write-Host "`n🎩 마스터 보고 — $($f.Name)" -ForegroundColor Cyan
     Write-Host $text
     $voice.Speak($text)
     Add-Content $Spoken $f.Name -Encoding UTF8      # 읽은 뒤에 기록 — 중간에 끊기면 다시 읽습니다
@@ -68,7 +68,7 @@ function Pull-Latest {
   finally { Pop-Location }
 }
 
-Write-Host "👂 자비스 음성 대기 — $OutDir  (${IntervalSec}초마다 확인, Ctrl+C 로 종료)"
+Write-Host "👂 마스터 음성 대기 — $OutDir  (${IntervalSec}초마다 확인, Ctrl+C 로 종료)"
 do {
   Pull-Latest
   $spokenCount = Speak-New

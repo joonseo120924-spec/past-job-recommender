@@ -65,6 +65,18 @@ n=$(grep -c '`\(approvals\|questions\|decisions\|SESSION-LOG\)\.md`' "$A"/*.md 2
 grep -q '10항목' "$A/tech-lead.md" || bad "tech-lead 착수 게이트가 10항목이 아님 (team-org.md 와 불일치)"
 grep -q '6자료'  "$A/qa-lead.md"  || bad "qa-lead 착수 자료가 6자료가 아님 (team-org.md 와 불일치)"
 
+# 7) 총괄 호칭 (D-034) — 역사 기록(decisions.md)은 소급 수정하지 않으므로 제외
+[ -f .claude/master.md ] || bad "정체성 정본 .claude/master.md 가 없습니다"
+# 파일명에 남아 있으면 실패
+n=$(find . -path ./.git -prune -o -iname '*jarvis*' -print 2>/dev/null | wc -l)
+[ "$n" -gt 0 ] && bad "파일명에 옛 호칭이 남은 파일 ${n}개 — D-034 대조표대로 바꾸십시오"
+# 본문은 '경위 설명'만 허용한다. 되돌림 맥락(D-029/D-034/되돌/옛/이전) 없이 쓴 줄이면 실패
+n=$(grep -rn --exclude-dir=.git --exclude-dir=__pycache__ -i 'jarvis\|자비스' . 2>/dev/null \
+      | grep -v '^\./ai-team/decisions\.md:' \
+      | grep -v '^\./ai-team/scripts/team-check\.sh:' \
+      | grep -vE 'D-029|D-034|되돌|옛 호칭|이전 호칭' | wc -l)
+[ "$n" -gt 0 ] && bad "옛 호칭을 현재 호칭처럼 쓴 줄 ${n}개 — 총괄 호칭은 마스터입니다 (D-034)"
+
 if [ $FAIL -eq 0 ]; then
   say "✅ 팀 정의 점검 통과 — ${ACTUAL}명, 형식·명부·경로·게이트 일치"
 else
