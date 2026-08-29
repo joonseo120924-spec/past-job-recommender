@@ -25,10 +25,19 @@
 | 산출물 | 작성 | 검토 |
 |---|---|---|
 | 아이디어 | `strategy-lead` | `product-planner` |
+| **채점 근거** | `strategy-lead` | `data-analyst` |
+| **출처** | 조사 3인 | `source-verifier` |
 | 기획·설계 | `product-planner` | `tech-lead` |
+| **문구** | `ux-writer` | `ux-designer` |
 | 디자인 | `design-lead` | `frontend-dev` |
+| **접근성** | `accessibility-auditor` | `design-lead` |
+| **보안 설계** | `security-architect` | `security-tester` |
 | 코드 | `tech-lead` | `qa-lead` |
+| **성능** | `performance-engineer` | `tech-lead` |
 | 테스트 결과 | `qa-lead` | `tech-lead` |
+| **호환성** | `compatibility-tester` | `qa-lead` |
+| **법적 문서** | `privacy-compliance` | `gtm-lead` |
+| **사용자 문서** | `tech-writer` | `ux-writer` |
 | 스토어 자료 | `gtm-lead` | `product-planner` |
 
 **검토자는 이미 단계를 마쳤거나 다음 단계에서 그 산출물을 실제로 받는 사람**이어야 합니다.
@@ -94,5 +103,5 @@
 | **경로는 상대 POSIX** (`.claude/...`, `ai-team/...`) | Windows 절대경로는 Linux에서 전부 깨짐 |
 | **브라우저 검증 역할은 `tools:` 줄을 쓰지 말 것** | 화이트리스트가 있으면 MCP 브라우저 도구가 차단됨 |
 
-`tools:` 를 **쓰면 안 되는** 역할 10개:
-`team-master` `design-lead` `ui-designer` `brand-designer` `tech-lead` `frontend-dev` `fullstack-dev` `qa-lead` `functional-tester` `security-tester`
+`tools:` 를 **쓰면 안 되는** 역할 16개 (2026-08-29 실측):
+`accessibility-auditor` · `brand-designer` · `compatibility-tester` · `design-lead` · `evidence-auditor` · `frontend-dev` · `fullstack-dev` · `functional-tester` · `performance-engineer` · `qa-lead` · `security-tester` · `strategy-lead` · `team-master` · `tech-lead` · `test-automation-engineer` · `ui-designer`

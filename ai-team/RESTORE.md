@@ -24,7 +24,7 @@ mkdir -p .claude/agents .claude/skills/meeting-room .claude/skills/daily-app
 mkdir -p ai-team/apps          # 산출물은 ai-team/apps/<날짜>/ 아래에만. ai-team/docs/ 는 폐기 경로
 # ... 파일 작성 ...
 git add .claude ai-team
-git commit -m "AI 앱 개발팀 복원: 6본부 20명 + 규정 + 스킬 + 상태 파일"
+git commit -m "AI 앱 개발팀 복원: 6본부 29명 + 감사실 2 + 규정 + 스킬 + 상태 파일"
 ```
 `.gitignore` 에 `.claude/` 가 있으면 **제외 규칙을 먼저 풀어야** 합니다.
 **원격 컨테이너에는 로컬 스케줄러가 없습니다.** 대신 Claude Routine 이 매일 07:07 KST 에 지정된 대화창을 깨웁니다 — 자동 실행은 **동작합니다**. 결과는 커밋해야만 남습니다.
@@ -32,13 +32,13 @@ git commit -m "AI 앱 개발팀 복원: 6본부 20명 + 규정 + 스킬 + 상태
 ## 1. 파일 작성 시 절대 지킬 것
 | 항목 | 이유 |
 |---|---|
-| **BOM 없는 UTF-8** | BOM이 붙으면 `---` 프론트매터를 못 읽어 **에이전트 20명이 통째로 사라집니다.** 실제 발생한 사고 |
+| **BOM 없는 UTF-8** | BOM이 붙으면 `---` 프론트매터를 못 읽어 **에이전트 전원이 통째로 사라집니다.** 20명 시절 실제 발생한 사고 |
 | 첫 줄이 정확히 `---` | 에이전트 파일 필수 |
 | **경로는 상대 POSIX** | Windows 절대경로는 Linux에서 전부 깨짐 |
 | **브라우저 검증 역할은 `tools:` 줄 금지** | 화이트리스트가 있으면 MCP 브라우저 도구가 차단됨 |
 
-`tools:` 를 **쓰면 안 되는** 역할 10개:
-`team-master` `design-lead` `ui-designer` `brand-designer` `tech-lead` `frontend-dev` `fullstack-dev` `qa-lead` `functional-tester` `security-tester`
+`tools:` 를 **쓰면 안 되는** 역할 16개 (2026-08-29 실측):
+`accessibility-auditor` · `brand-designer` · `compatibility-tester` · `design-lead` · `evidence-auditor` · `frontend-dev` · `fullstack-dev` · `functional-tester` · `performance-engineer` · `qa-lead` · `security-tester` · `strategy-lead` · `team-master` · `tech-lead` · `test-automation-engineer` · `ui-designer`
 
 ## 2. 검증 스크립트
 ```bash
@@ -51,11 +51,11 @@ for f in .claude/agents/*.md; do [ "$(head -1 "$f")" = "---" ] || echo "BAD: $f"
 #  지시·경로 지정에 쓰였다면 지적 대상, 이력 서술이면 무방)
 grep -ro 'C:.Users' .claude/ | wc -l
 # 개수 — 20
-ls .claude/agents/*.md | wc -l
+ls .claude/agents/*.md | wc -l    # 31 이어야 합니다
 ```
 
 ## 3. 복원 순서
-1. `.claude/agents/` 에 20개 `.md` 생성
+1. `.claude/agents/` 에 **31개** `.md` 생성 (6본부 29 + 감사실 2 — 명단은 `.claude/team-org.md`)
 2. `.claude/` 에 `team-rules.md` · `team-org.md` · `master-doctrine.md` 생성
 3. `.claude/skills/meeting-room/SKILL.md` · `skills/daily-app/SKILL.md` 생성 (정본 참조형 — D-012)
 4. `ai-team/` 에 `README.md` `SESSION-LOG.md` `cycle.md` `board.md` `approvals.md` `decisions.md` `questions.md` 생성
