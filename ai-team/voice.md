@@ -41,14 +41,14 @@ Claude Code 의 음성 입력은 **키를 눌러 시작**합니다. 두 가지 �
 ## ❌ 박수 두 번 · 상시 마이크 — 왜 안 되는가
 Claude Code 에는 **웨이크워드도, 상시 청취도, 소리 이벤트 감지도 없습니다.** 음성 입력은 항상 **키 입력으로 시작**합니다. 이것은 설정으로 바꿀 수 있는 항목이 아니라 기능의 부재입니다.
 
-### ✅ 그래서 직접 만들었습니다 — `clap-listen.py` (D-030, 사용자 지시)
+### ✅ 그래서 직접 만들었습니다 — `jarvis.py` (D-030, 사용자 지시)
 Claude Code 가 못 하는 부분을 **바깥에서** 채웁니다. 마이크를 계속 듣다가 박수 두 번을 감지해 **단축키를 눌러 줍니다.**
 
 ```bash
 pip install sounddevice                                   # 0단계 (Python 필요)
-python ai-team/scripts/clap-listen.py --calibrate         # 1단계 소리 크기 보기
-python ai-team/scripts/clap-listen.py --test              # 2단계 감지만 (키 안 누름)
-python ai-team/scripts/clap-listen.py --key ctrl+shift+v  # 3단계 실제 사용
+python ai-team/scripts/jarvis.py --tune         # 1단계 소리 크기 보기
+python ai-team/scripts/jarvis.py --setup             # 2단계 감지만 (키 안 누름)
+python ai-team/scripts/jarvis.py --key ctrl+shift+v  # 3단계 실제 사용
 ```
 
 **감지 방식** — 두 조건을 **모두** 요구합니다.
@@ -63,7 +63,7 @@ python ai-team/scripts/clap-listen.py --key ctrl+shift+v  # 3단계 실제 사�
 
 > 이 검증에서 **결함을 하나 잡아 고쳤습니다.** 처음 판은 「감쇠」만 봐서 **말소리가 끝나는 순간을 박수 1회로** 세었습니다. 온셋 조건을 넣어 해소했습니다.
 
-**⚠️ 아직 검증 못 한 것**: **실제 마이크**. 이 컨테이너엔 오디오 장치가 없습니다. `--calibrate` → `--test` 를 반드시 사장님 PC 에서 거치십시오. 임계값은 `--factor`(배경 대비 배수) · `--floor`(절대 최소)로 조정합니다.
+**⚠️ 아직 검증 못 한 것**: **실제 마이크**. 이 컨테이너엔 오디오 장치가 없습니다. `--tune` → `--test` 를 반드시 사장님 PC 에서 거치십시오. 임계값은 `--factor`(배경 대비 배수) · `--floor`(절대 최소)로 조정합니다.
 
 **선행 조건**: Windows 로컬에 **Python 이 없습니다** (2026-08-07 환경 확인: `git` 만 존재). 설치는 RED(소프트웨어 설치)라 사장님이 직접 하셔야 합니다 — [python.org](https://www.python.org/downloads/) · 설치 시 **Add Python to PATH** 체크.
 
@@ -73,7 +73,7 @@ python ai-team/scripts/clap-listen.py --key ctrl+shift+v  # 3단계 실제 사�
 박수 → 말로 명령 → **자비스가 음성으로 답하는** 한 바퀴입니다.
 
 ```
-👏👏  박수 두 번        clap-listen.py 가 단축키 전송
+👏👏  박수 두 번        jarvis.py 가 단축키 전송
 🎙️  말로 명령          Claude Code 받아쓰기 (tap 모드)
 🎩  자비스가 답함       화면 + ai-team/voice-out/<시각>-<주제>.txt 원고 작성 → 커밋·푸시
 🔊  낭독               사장님 PC 의 jarvis-voice.ps1 이 pull → SAPI 로 읽음
@@ -138,7 +138,7 @@ espeak · espeak-ng · say · festival · spd-say · pwsh · powershell → 전�
 ## 세 갈래 정리 — 무엇을 쓰면 되나
 | 상황 | 쓸 것 |
 |---|---|
-| 컴퓨터에서 손 안 대고 시작 | 👏 `clap-listen.py` (Python 필요) |
+| 컴퓨터에서 손 안 대고 시작 | 👏 `jarvis.py` (Python 필요) |
 | 컴퓨터에서 키 한 번이면 충분 | ⌨️ `tap` 모드만 켜기 — **가장 간단** |
 | 핸드폰에서 말하기 | 📱 claude.ai 앱 마이크 — **아무것도 필요 없음** |
 | 어디서든 듣기 | 🎩 음성 브리핑 콘솔 (브라우저) |
