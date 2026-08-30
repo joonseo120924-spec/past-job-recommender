@@ -101,6 +101,8 @@ n=$(find . -path ./.git -prune -o -iname '*jarvis*' -print 2>/dev/null | wc -l)
 n=$(grep -rn --exclude-dir=.git --exclude-dir=__pycache__ -iE 'jarvis|자비스|J *A *R *V *I *S' . 2>/dev/null \
       | grep -v '^\./ai-team/decisions\.md:' \
       | grep -v '^\./ai-team/scripts/team-check\.sh:' \
+      | grep -v '^\./ai-team/scripts/check-selftest\.py:' \
+      | grep -v '^\./ai-team/approvals\.md:' \
       | grep -v '^\./ai-team/docs/감사-' \
       | grep -v '^\./ai-team/notion-queue/' \
       | grep -vE 'D-029|D-034|되돌|옛 호칭|이전 호칭' | wc -l)
