@@ -51,7 +51,15 @@ publishable 키로는 테이블을 만들 수 없습니다(DDL 불가). 대시�
 2. `ai-team/supabase/schema.sql` **전문**을 붙여넣고 **Run**
 3. 확인: `python3 ai-team/scripts/supabase-sync.py status`
 
-여러 번 실행해도 안전합니다.
+여러 번 실행해도 안전합니다 — **다만 `create table if not exists` 라서 이미 만든 표의
+`check` 제약은 바뀌지 않습니다.** 종류(`kind`)를 추가했다면(예: 2026-08-30 「논쟁」) 대시보드에서
+제약을 직접 갱신해야 합니다 (3차 감사 중대-3):
+
+```sql
+alter table public.team_events drop constraint if exists team_events_kind_check;
+alter table public.team_events add constraint team_events_kind_check
+  check (kind in ('호출','승인','반려','결정','막힘','기록','동기화','감사','논쟁'));
+```
 
 ## 키 보관
 이 저장소는 **공개(public)** 입니다. 키는 커밋하지 않습니다.

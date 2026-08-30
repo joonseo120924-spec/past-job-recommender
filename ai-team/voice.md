@@ -47,8 +47,9 @@ Claude Code 가 못 하는 부분을 **바깥에서** 채웁니다. 마이크를
 ```bash
 pip install sounddevice                                   # 0단계 (Python 필요)
 python ai-team/scripts/master-listen.py --tune         # 1단계 소리 크기 보기
-python ai-team/scripts/master-listen.py --setup             # 2단계 감지만 (키 안 누름)
-python ai-team/scripts/master-listen.py --key ctrl+shift+v  # 3단계 실제 사용
+python ai-team/scripts/master-listen.py --setup                # 마이크·음성 점검
+python ai-team/scripts/master-listen.py --tune                 # 박수 감도 보정
+python ai-team/scripts/master-listen.py --hotkey ctrl+shift+v  # 실제 사용 (깨어난 뒤 누를 단축키)
 ```
 
 **감지 방식** — 두 조건을 **모두** 요구합니다.
@@ -66,6 +67,8 @@ python ai-team/scripts/master-listen.py --key ctrl+shift+v  # 3단계 실제 사
 **⚠️ 아직 검증 못 한 것**: **실제 마이크**. 이 컨테이너엔 오디오 장치가 없습니다. `--tune` → `--test` 를 반드시 사장님 PC 에서 거치십시오. 임계값은 `--factor`(배경 대비 배수) · `--floor`(절대 최소)로 조정합니다.
 
 **선행 조건**: Windows 로컬에 **Python 이 없습니다** (2026-08-07 환경 확인: `git` 만 존재). 설치는 RED(소프트웨어 설치)라 사장님이 직접 하셔야 합니다 — [python.org](https://www.python.org/downloads/) · 설치 시 **Add Python to PATH** 체크.
+
+> ⚠️ 인자 이름은 `ai-team/scripts/master-listen.py` 실물 기준입니다. 예전 문서의 `--key`·`--test`·`--factor`·`--floor` 는 **존재하지 않는 인자**였습니다 (3차 감사 중대-4 정정). 그 밖에 `--say` · `--device` · `--list` · `--quiet` 가 있습니다.
 
 **어떤 키를 줘야 하나**: Claude Code 의 음성 입력 단축키입니다. `/config` 에서 voice 를 켠 뒤 확인하시고, 그 조합을 `--key` 에 넣으십시오. 모르면 `--test` 로 감지만 확인하셔도 됩니다.
 

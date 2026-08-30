@@ -68,6 +68,8 @@ CASES = [
      "요건 ③ 을 대신하지 못합니다", "요건 ③ 을 대신합니다"),
     ("회의실이 event.sh 대신 supabase 직접 호출 지시", ".claude/skills/meeting-room/SKILL.md",
      "ai-team/scripts/event.sh 논쟁", "supabase-sync.py event --kind 논쟁"),
+    ("옛 호칭이 자간 표기로 숨어듦", ".claude/master.md",
+     "# 🎩 마스터 — 총괄", "# 🎩 J A R V I S — 총괄"),
 ]
 
 

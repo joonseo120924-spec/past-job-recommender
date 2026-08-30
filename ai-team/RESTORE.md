@@ -21,7 +21,9 @@ echo "$HOME"
 ```bash
 cd "$(git rev-parse --show-toplevel)"
 mkdir -p .claude/agents .claude/skills/meeting-room .claude/skills/daily-app
-mkdir -p ai-team/apps          # 산출물은 ai-team/apps/<날짜>/ 아래에만. ai-team/docs/ 는 폐기 경로
+mkdir -p ai-team/apps ai-team/docs   # 앱 산출물은 ai-team/apps/<날짜>/ 아래에만
+                                     # ai-team/docs/ 는 **앱과 무관한 감사 보고서** 자리입니다
+                                     # (team-master·evidence-auditor 정의가 지정한 경로 — 3차 감사 중대-6 정정)
 # ... 파일 작성 ...
 git add .claude ai-team
 git commit -m "AI 앱 개발팀 복원: 6본부 29명 + 감사실 2 + 규정 + 스킬 + 상태 파일"

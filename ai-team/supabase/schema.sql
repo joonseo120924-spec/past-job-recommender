@@ -29,7 +29,7 @@ create table if not exists public.team_events (
   cycle  integer,
   day    integer,
   stage  text,                                       -- '① 전략' … '⑥ 출시운영' | '감사'
-  kind   text not null check (kind in ('호출','승인','반려','결정','막힘','기록','동기화','감사')),
+  kind   text not null check (kind in ('호출','승인','반려','결정','막힘','기록','동기화','감사','논쟁')),
   actor  text,                                       -- 에이전트 이름. 예: 'system-architect'
   title  text not null,
   body   text,

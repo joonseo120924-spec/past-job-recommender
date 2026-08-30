@@ -98,7 +98,7 @@ python3 ai-team/scripts/check-gates.py || FAIL=$((FAIL+1))
 n=$(find . -path ./.git -prune -o -iname '*jarvis*' -print 2>/dev/null | wc -l)
 [ "$n" -gt 0 ] && bad "파일명에 옛 호칭이 남은 파일 ${n}개 — D-034 대조표대로 바꾸십시오"
 # 본문은 '경위 설명'만 허용한다. 되돌림 맥락(D-029/D-034/되돌/옛/이전) 없이 쓴 줄이면 실패
-n=$(grep -rn --exclude-dir=.git --exclude-dir=__pycache__ -i 'jarvis\|자비스' . 2>/dev/null \
+n=$(grep -rn --exclude-dir=.git --exclude-dir=__pycache__ -iE 'jarvis|자비스|J *A *R *V *I *S' . 2>/dev/null \
       | grep -v '^\./ai-team/decisions\.md:' \
       | grep -v '^\./ai-team/scripts/team-check\.sh:' \
       | grep -v '^\./ai-team/docs/감사-' \

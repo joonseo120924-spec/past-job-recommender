@@ -35,11 +35,15 @@ TEAM_GLOBS = [
     "ai-team/*.md", "ai-team/scripts/*.sh", "ai-team/scripts/*.py", "ai-team/scripts/*.ps1",
     "ai-team/scripts/*.json", "ai-team/supabase/schema.sql", "ai-team/supabase/.env.example",
     "ai-team/notion-queue/*.md",
+    # 3차 감사 중대-2: 정본 1차 기록처(events.log)와 감사 보고서가 빠진 채
+    # verify 가 「✅ 완전」을 냈습니다. 복원해도 감사 이력과 회의 기록이 사라집니다
+    "ai-team/events.log",
+    "ai-team/docs/*.md",
 ]
 # 복원 후 이것이 갖춰지지 않으면 "복원됨"이라고 쓰지 않습니다 (verify 가 실측합니다)
 REQUIRED = {
     "agents": 31,                       # 6본부 29명 + 감사실 2명
-    "files": [".claude/team-rules.md", ".claude/team-org.md", ".claude/master.md",
+    "files": ["ai-team/events.log", ".claude/team-rules.md", ".claude/team-org.md", ".claude/master.md",
               ".claude/master-doctrine.md", ".claude/settings.json",
               ".claude/skills/meeting-room/SKILL.md", ".claude/skills/daily-app/SKILL.md",
               "ai-team/scripts/roster.sh", "ai-team/scripts/team-check.sh",
@@ -47,7 +51,7 @@ REQUIRED = {
 }
 EXEC_SUFFIX = (".sh", ".py")
 
-KINDS = ["호출", "승인", "반려", "결정", "막힘", "기록", "동기화", "감사"]
+KINDS = ["호출", "승인", "반려", "결정", "막힘", "기록", "동기화", "감사", "논쟁"]
 
 
 def die(msg, code=1):
