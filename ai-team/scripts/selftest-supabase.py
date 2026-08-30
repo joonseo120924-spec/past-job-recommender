@@ -56,9 +56,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
         return self._json([])
 
 
-def run(cmd, cwd, url):
+def run(cmd, cwd, url, extra=None):
     env = dict(os.environ, SUPABASE_URL=url, SUPABASE_KEY="test-key",
                no_proxy="127.0.0.1,localhost", NO_PROXY="127.0.0.1,localhost")
+    if extra:
+        env.update(extra)
     for v in ("HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy"):
         env.pop(v, None)
     return subprocess.run([sys.executable] + cmd, cwd=cwd, env=env,
@@ -120,7 +122,12 @@ def main():
             tmp2 = tempfile.mkdtemp(prefix="team-bootstrap-")
             boot = os.path.join(tmp2, "boot.py")
             open(boot, "w", encoding="utf-8").write(snippet)
-            r = run([boot], tmp2, url)
+            # 덩어리는 이제 기본이 **예행**입니다 (3차 감사 치명-2). 먼저 예행을 확인하고,
+            # CONFIRM=1 로 실제 복원까지 봅니다 — 안전장치가 사는지도 시험입니다
+            dry = run([boot], tmp2, url)
+            if os.path.exists(os.path.join(tmp2, ".claude")):
+                fail.append("BOOTSTRAP 예행이 파일을 썼습니다 — 안전장치 없음")
+            r = run([boot], tmp2, url, extra={"CONFIRM": "1"})
             print("BOOTSTRAP.md 붙여넣기: %s" % (r.stdout.strip().splitlines() or [r.stderr.strip()])[0])
             got = sum(len(files) for _, _, files in os.walk(tmp2)) - 1   # boot.py 제외
             if got != len(STORE):

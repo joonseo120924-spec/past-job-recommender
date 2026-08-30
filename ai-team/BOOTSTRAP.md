@@ -36,18 +36,35 @@ while True:                             # 페이지로 끊어 받습니다 (행�
     if len(part) < 50: break
     off += 50
 if not rows: sys.exit("✗ 원격이 비어 있습니다. 팀이 있는 창에서 push --team 을 먼저 하십시오")
+# 안전장치 ① 불완전한 원격으로는 복원하지 않습니다 — 반쯤 복원된 팀이 더 위험합니다
+agents = sum(1 for k in rows if k.startswith(".claude/agents/"))
+bad = [k for k in rows if k.startswith(".claude/agents/") and not rows[k].startswith("---")]
+if agents != 31 or bad:
+    sys.exit("✗ 원격이 불완전합니다 (에이전트 %d/31, 형식오류 %d). 복원하지 않습니다" % (agents, len(bad)))
+# 안전장치 ② 기본은 **예행**입니다. 정본은 저장소이므로 로컬을 말없이 덮지 않습니다
+plan = [(k if "/" in k else "ai-team/" + k, c) for k, c in rows.items()]
+diff = [r for r, c in plan if os.path.exists(os.path.join(root, r))
+        and open(os.path.join(root, r), encoding="utf-8").read() != c]
+print("복원 대상 %d개 · 덮어쓸 파일 %d개 → %s" % (len(plan), len(diff), root))
+for r in diff[:10]: print("  ✎ " + r)
+if os.environ.get("CONFIRM") != "1":
+    sys.exit("\n예행입니다. 파일을 건드리지 않았습니다. 실제로 쓰려면 CONFIRM=1 을 주십시오\n"
+             "  CONFIRM=1 python3 - <<'PY' … (같은 덩어리를 다시)")
 n = 0
-for k, c in rows.items():
-    rel = k if "/" in k else "ai-team/" + k          # 이름만 있는 8개는 ai-team/ 아래로
+for rel, c in plan:
     dest = os.path.join(root, rel); os.makedirs(os.path.dirname(dest), exist_ok=True)
     open(dest, "w", encoding="utf-8", newline="").write(c)
     if rel.startswith("ai-team/scripts/") and rel.endswith((".sh", ".py")): os.chmod(dest, 0o755)
     n += 1
-agents = sum(1 for k in rows if k.startswith(".claude/agents/"))
 print("✓ %d개 파일 복원 · 에이전트 %d명 → %s" % (n, agents, root))
-print("⚠️ 31명이 아니면 원격이 불완전합니다" if agents != 31 else "다음: ai-team/scripts/roster.sh")
+print("다음: ai-team/scripts/roster.sh")
 PY
 ```
+
+> ⚠️ **기본은 예행입니다.** 무엇을 덮어쓸지 먼저 보여 주고 멈춥니다.
+> 실제로 쓰려면 같은 덩어리를 `CONFIRM=1` 을 붙여 다시 실행하십시오 —
+> `CONFIRM=1 python3 - <<'PY' … PY`. 정본은 저장소이고, 로컬이 더 최신일 수 있습니다
+> (2026-08-30 3차 감사 치명-2 로 추가한 안전장치).
 
 ## 2. 확인
 ```bash

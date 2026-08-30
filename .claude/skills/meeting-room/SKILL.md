@@ -115,7 +115,7 @@ ai-team/scripts/roster.sh --unit all      # 킥오프·개편·감사 — 전 �
 - **원문을 넣습니다.** 마스터가 요약해 넣으면 그건 마스터의 말이지 A 의 말이 아닙니다
 - **최대 3라운드.** 넘으면 미합의로 기록하고 파트장이 판정합니다 (④↔⑤ 반복 상한과 같은 취지)
 - **합의를 강요하지 않습니다.** 미합의는 미합의로 남기는 것이 더 정확합니다 — D-015 에서 감사관이 유보했기 때문에 반증이 가능했습니다
-- 라운드마다 `supabase-sync.py event --kind 호출` 로 남깁니다
+- 라운드마다 `ai-team/scripts/event.sh 논쟁 <발언자> "<한 줄>" [참조]` 로 남깁니다 (정본 `team-rules.md` 「기록 경로」)
 
 ### 🔴 전원을 매번 호출하지는 않습니다 (이유)
 출석은 31명 전원, **발언은 안건 관련자**입니다.
@@ -146,7 +146,7 @@ ai-team/scripts/roster.sh --unit all      # 킥오프·개편·감사 — 전 �
 
 | 이벤트 | 즉시 할 것 |
 |---|---|
-| 파트장·실무자 호출 완료 | `supabase-sync.py event --kind 호출` |
+| 파트장·실무자 호출 완료 | `ai-team/scripts/event.sh 호출 <발언자> "<한 줄>"` |
 | 승인 / 반려 | `approvals.md` 기록 → `--kind 승인` 또는 `--kind 반려` |
 | 결정 (GREEN) | `decisions.md` 기록 → `--kind 결정` |
 | 막힘 (RED·차단) | `board.md` 기록 → `--kind 막힘` |

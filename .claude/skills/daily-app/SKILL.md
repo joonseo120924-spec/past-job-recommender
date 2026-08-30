@@ -77,7 +77,7 @@ RED에 막히면 그 단계만 "차단됨"으로 기록하고 나머지를 진�
 ## 7. 마감 — 슈퍼베이스 반영 (생략 불가)
 ```bash
 python3 ai-team/scripts/supabase-sync.py push
-python3 ai-team/scripts/supabase-sync.py event --kind 기록 --title "<사이클 N · M일차 마감>"
+`ai-team/scripts/event.sh <종류> <발언자> "<한 줄>" [참조]`
 ```
 절차 정본: `ai-team/supabase.md`. 실패하면 실패했다고 적습니다.
 
