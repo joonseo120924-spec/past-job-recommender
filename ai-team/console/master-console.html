@@ -1,0 +1,450 @@
+<title>마스터 음성 브리핑</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@300;400;500;600&display=swap">
+<style>
+  /* 관제 콘솔 — 기본은 어두운 계기판. 밝은 테마는 아래에서 토큰만 뒤집습니다. */
+  :root{
+    --ground:#0E1620; --panel:#16202C; --panel-2:#1C2836; --line:#293849;
+    --text:#DDE6EF; --muted:#8698AB; --faint:#5C6D80;
+    --signal:#E8A33D; --signal-ink:#2A1D08;
+    --ok:#4FB286; --warn:#E8A33D; --stop:#D95F5F;
+    --shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 8px 24px rgba(0,0,0,.35);
+    --r:10px;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --ground:#EEF1F5; --panel:#FFFFFF; --panel-2:#F5F7FA; --line:#D8DFE7;
+      --text:#16202C; --muted:#5B6C7E; --faint:#8A9AAA;
+      --signal:#B7761A; --signal-ink:#FFF6E6;
+      --ok:#2F7D5C; --warn:#B7761A; --stop:#B03E3E;
+      --shadow:0 1px 2px rgba(20,32,44,.06), 0 8px 20px rgba(20,32,44,.07);
+    }
+  }
+  :root[data-theme="light"]{
+    --ground:#EEF1F5; --panel:#FFFFFF; --panel-2:#F5F7FA; --line:#D8DFE7;
+    --text:#16202C; --muted:#5B6C7E; --faint:#8A9AAA;
+    --signal:#B7761A; --signal-ink:#FFF6E6;
+    --ok:#2F7D5C; --warn:#B7761A; --stop:#B03E3E;
+    --shadow:0 1px 2px rgba(20,32,44,.06), 0 8px 20px rgba(20,32,44,.07);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    background:var(--ground); color:var(--text);
+    font-family:"IBM Plex Sans KR", system-ui, -apple-system, "Malgun Gothic", sans-serif;
+    font-weight:300; line-height:1.6; margin:0;
+    padding:clamp(16px,4vw,40px) clamp(14px,4vw,32px) 64px;
+  }
+  .wrap{max-width:920px; margin:0 auto; display:flex; flex-direction:column; gap:22px}
+
+  /* ── 머리 ── */
+  .head{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
+  .head h1{
+    font-size:clamp(20px,3.4vw,26px); font-weight:600; margin:0; letter-spacing:-.01em;
+    text-wrap:balance;
+  }
+  .head .who{
+    font-family:"IBM Plex Mono", ui-monospace, monospace; font-size:11px;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--faint);
+  }
+  .stamp{
+    margin-left:auto; font-family:"IBM Plex Mono", monospace; font-size:11px;
+    color:var(--faint); font-variant-numeric:tabular-nums;
+  }
+
+  /* ── 송신 버튼 ── */
+  .deck{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--r);
+    box-shadow:var(--shadow); padding:clamp(16px,3vw,24px);
+    display:grid; grid-template-columns:auto 1fr; gap:clamp(14px,3vw,22px); align-items:center;
+  }
+  @media (max-width:560px){ .deck{grid-template-columns:1fr} }
+  .ptt{
+    width:104px; height:104px; border-radius:50%; border:1px solid var(--line);
+    background:var(--panel-2); color:var(--signal); cursor:pointer;
+    display:grid; place-items:center; gap:2px; font-family:inherit;
+    transition:transform .12s ease, border-color .12s ease, background .12s ease;
+  }
+  .ptt:hover{border-color:var(--signal); background:var(--ground)}
+  .ptt:active{transform:scale(.97)}
+  .ptt:focus-visible{outline:2px solid var(--signal); outline-offset:3px}
+  .ptt .glyph{font-size:26px; line-height:1}
+  .ptt .cap{
+    font-family:"IBM Plex Mono", monospace; font-size:10px; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--muted);
+  }
+  .ptt[data-on="1"]{background:var(--signal); color:var(--signal-ink); border-color:var(--signal)}
+  .ptt[data-on="1"] .cap{color:var(--signal-ink)}
+  .ptt[data-on="1"] .glyph{animation:pulse 1.6s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+  @media (prefers-reduced-motion:reduce){
+    .ptt,.ptt .glyph{transition:none; animation:none}
+  }
+
+  .now{display:flex; flex-direction:column; gap:10px; min-width:0}
+  .line1{font-size:clamp(15px,2.4vw,18px); font-weight:500; text-wrap:balance}
+  .chips{display:flex; flex-wrap:wrap; gap:6px}
+  .chip{
+    font-family:"IBM Plex Mono", monospace; font-size:11px; letter-spacing:.02em;
+    padding:3px 9px; border-radius:999px; border:1px solid var(--line);
+    color:var(--muted); background:var(--panel-2); white-space:nowrap;
+  }
+  .chip[data-tone="stop"]{color:var(--stop); border-color:color-mix(in srgb, var(--stop) 45%, var(--line))}
+  .chip[data-tone="warn"]{color:var(--warn); border-color:color-mix(in srgb, var(--warn) 45%, var(--line))}
+  .chip[data-tone="ok"]{color:var(--ok); border-color:color-mix(in srgb, var(--ok) 45%, var(--line))}
+  .controls{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+  button.mini, select.mini{
+    font-family:inherit; font-size:13px; color:var(--text); background:var(--panel-2);
+    border:1px solid var(--line); border-radius:8px; padding:6px 12px; cursor:pointer;
+  }
+  button.mini:hover{border-color:var(--signal)}
+  button.mini:focus-visible, select.mini:focus-visible{outline:2px solid var(--signal); outline-offset:2px}
+  button.mini[disabled]{opacity:.45; cursor:not-allowed}
+  .hint{font-size:12px; color:var(--faint)}
+
+  /* ── 공용 패널 ── */
+  section{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--r);
+    box-shadow:var(--shadow); padding:clamp(16px,3vw,22px);
+  }
+  h2{
+    font-size:12px; font-weight:500; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--faint); margin:0 0 14px; font-family:"IBM Plex Mono", monospace;
+  }
+  .script{
+    font-size:15px; line-height:1.75; margin:0; max-width:62ch;
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .script p{margin:0}
+  .script p.reading{color:var(--signal)}
+
+  /* ── 차단 ── */
+  .blocks{display:flex; flex-direction:column; gap:0}
+  .block{display:grid; grid-template-columns:auto 1fr; gap:12px; padding:12px 0; border-top:1px solid var(--line)}
+  .block:first-child{border-top:0; padding-top:0}
+  .bid{
+    font-family:"IBM Plex Mono", monospace; font-size:12px; color:var(--stop);
+    padding-top:2px; font-variant-numeric:tabular-nums;
+  }
+  .btitle{font-weight:500; font-size:15px}
+  .bwhy{font-size:13px; color:var(--muted); margin-top:2px}
+
+  /* ── 팀 ── */
+  .units{display:grid; gap:14px}
+  @media (min-width:700px){ .units{grid-template-columns:1fr 1fr} }
+  .unit{border:1px solid var(--line); border-radius:8px; padding:12px 13px; background:var(--panel-2)}
+  .uhead{display:flex; align-items:baseline; gap:8px; margin-bottom:9px}
+  .uname{font-weight:500; font-size:14px}
+  .ujob{font-size:12px; color:var(--faint); margin-left:auto}
+  .member{
+    display:flex; align-items:center; gap:8px; padding:3px 0;
+    font-family:"IBM Plex Mono", monospace; font-size:12.5px;
+  }
+  .member .nm{color:var(--text)}
+  .member .nm.lead{color:var(--signal)}
+  .member .new{color:var(--ok); font-size:10px}
+  .badge{
+    margin-left:auto; font-size:10px; letter-spacing:.06em; text-transform:uppercase;
+    padding:1px 6px; border-radius:4px; border:1px solid var(--line); color:var(--muted);
+  }
+  .badge[data-m="opus"]{color:var(--signal); border-color:color-mix(in srgb, var(--signal) 40%, var(--line))}
+
+  /* ── 받아쓰기 ── */
+  #heard{
+    font-family:"IBM Plex Mono", monospace; font-size:14px; color:var(--text);
+    background:var(--ground); border:1px solid var(--line); border-radius:8px;
+    padding:12px; min-height:64px; white-space:pre-wrap; word-break:break-word;
+  }
+  #heard:empty::before{content:"아직 들은 말이 없습니다."; color:var(--faint)}
+  footer{color:var(--faint); font-size:12px; line-height:1.7; max-width:62ch}
+  footer b{color:var(--muted); font-weight:500}
+  code{font-family:"IBM Plex Mono", monospace; font-size:.92em; color:var(--muted)}
+</style>
+
+<div class="wrap">
+  <div class="head">
+    <h1>마스터 음성 브리핑</h1>
+    <span class="who">마스터 · 총괄</span>
+    <span class="stamp">2026-08-29 기준</span>
+  </div>
+
+  <div class="deck">
+    <button class="ptt" id="ptt" aria-label="브리핑 낭독 시작">
+      <span class="glyph" id="pttGlyph">▶</span>
+      <span class="cap" id="pttCap">브리핑</span>
+    </button>
+    <div class="now">
+      <div class="line1">사이클 착수 대기 — 감사실 2인의 개편 감사가 먼저입니다.</div>
+      <div class="chips">
+        <span class="chip" data-tone="ok">팀 31명 · opus 17 · sonnet 14</span>
+        <span class="chip" data-tone="stop">감사 반려 — 재감사 대기</span>
+        <span class="chip" data-tone="stop">차단 3건</span>
+        <span class="chip">다음 = 사이클 3</span>
+      </div>
+      <div class="controls">
+        <button class="mini" id="stopBtn" disabled>정지</button>
+        <select class="mini" id="rate" aria-label="읽기 속도">
+          <option value="0.9">느리게</option>
+          <option value="1" selected>보통</option>
+          <option value="1.25">빠르게</option>
+        </select>
+        <select class="mini" id="voice" aria-label="음성 선택"></select>
+      </div>
+      <div class="hint" id="voiceHint"></div>
+    </div>
+  </div>
+
+  <section>
+    <h2>브리핑 원고</h2>
+    <div class="script" id="script"></div>
+  </section>
+
+  <section>
+    <h2>지금 막힌 것 — 사장님 결정이 필요합니다</h2>
+    <div class="blocks">
+      <div class="block">
+        <div class="bid">B-07</div>
+        <div>
+          <div class="btitle">감사 12건 전 회차 ❌ 반려</div>
+          <div class="bwhy">D-021 · D-025 ~ D-030. 전부 규정 파일을 고쳤는데 감사관 검증이 비어 있습니다. 감사실 2인을 부르면 한 번에 닫힙니다.</div>
+        </div>
+      </div>
+      <div class="block">
+        <div class="bid">B-03</div>
+        <div>
+          <div class="btitle">정기 실행 프롬프트가 낡았습니다</div>
+          <div class="bwhy">아침 7시 7분 자동 실행이 아직 20명 시절 프롬프트로 돕니다. 원격에서는 고칠 수 없어 사장님이 Routines 화면에서 바꾸셔야 합니다.</div>
+        </div>
+      </div>
+      <div class="block">
+        <div class="bid">B-06</div>
+        <div>
+          <div class="btitle">브랜치가 갈라져 있습니다</div>
+          <div class="bwhy">자동 저장은 새 브랜치로 가는데 정기 실행은 옛 브랜치를 봅니다. 그대로 두면 예전 사고가 브랜치 단위로 되풀이됩니다.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>팀 31명 — 이름을 부르면 옵니다</h2>
+    <div class="units" id="units"></div>
+  </section>
+
+  <section>
+    <h2>말로 명령 <span style="text-transform:none;letter-spacing:0">— 받아쓰기</span></h2>
+    <div class="controls" style="margin-bottom:12px">
+      <button class="mini" id="micBtn">🎙 듣기 시작</button>
+      <button class="mini" id="copyBtn" disabled>복사</button>
+      <span class="hint" id="micHint"></span>
+    </div>
+    <div id="heard" aria-live="polite"></div>
+  </section>
+
+  <footer>
+    <b>이 페이지가 하는 일</b> — 브리핑을 소리로 읽고, 사장님 말을 글자로 받습니다. 핸드폰·컴퓨터 어디서 열어도 설치가 필요 없습니다.<br>
+    <b>하지 못하는 일</b> — 받아쓴 말을 마스터에게 <b>직접 보내지는 못합니다.</b> 브라우저 보안상 이 페이지는 바깥으로 요청을 보낼 수 없습니다. 받아쓴 글을 복사해 대화창에 붙여넣으시거나, 그냥 Claude 앱에 대고 말씀하십시오.<br>
+    <b>아이폰</b> — 소리는 화면을 한 번 누른 뒤에야 납니다. 받아쓰기는 사파리에서 동작하지 않을 수 있습니다.<br>
+    <b>한국어 음성이 없으면</b> 발음이 어색합니다. 기기 설정에서 한국어 음성을 추가하시면 나아집니다.
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* 브리핑 원고 — 소리로 들었을 때 이해되도록 짧은 문장으로 씁니다. */
+  var SCRIPT = [
+    "마스터입니다. 오늘 상태를 보고드립니다.",
+    "팀은 서른한 명입니다. 여섯 개 본부에 스물아홉 명, 감사실에 두 명입니다. 판단과 검증을 맡는 열일곱 명은 오퍼스를, 조사와 문서를 맡는 열네 명은 소네트를 씁니다.",
+    "사이클은 아직 시작하지 않았습니다. 착수 대기입니다.",
+    "먼저 해야 할 일이 있습니다. 감사실 두 명이 개편을 감사해야 합니다. 규정 파일을 일곱 번 고쳤는데 감사관 검증이 비어 있습니다.",
+    "막힌 것은 세 가지입니다. 첫째, 감사 일곱 건. 둘째, 아침 정기 실행 프롬프트가 아직 스무 명 시절 것입니다. 셋째, 브랜치가 갈라져 있습니다.",
+    "둘째와 셋째는 제가 손댈 수 없는 곳에 있습니다. 사장님이 결정해 주셔야 합니다.",
+    "감사를 지금 시작할까요. 부르시면 감사관 두 명이 서로 교차 검증하도록 돌리겠습니다."
+  ];
+
+  var UNITS = [
+    ["① 전략", "뭘 만들지 정한다", [["strategy-lead","sonnet",1,0],["market-analyst","sonnet",0,0],["competitor-analyst","sonnet",0,0],["user-researcher","sonnet",0,0],["source-verifier","sonnet",0,1]]],
+    ["② 프로덕트", "질문 없이 만들 수 있게", [["product-planner","opus",1,0],["ux-designer","sonnet",0,0],["system-architect","opus",0,0],["ux-writer","sonnet",0,1],["data-analyst","opus",0,1]]],
+    ["③ 디자인", "어떻게 보이는지", [["design-lead","opus",1,0],["ui-designer","sonnet",0,0],["brand-designer","sonnet",0,0],["accessibility-auditor","opus",0,1]]],
+    ["④ 개발", "실제로 돌아가는 코드", [["tech-lead","opus",1,0],["frontend-dev","opus",0,0],["fullstack-dev","opus",0,0],["performance-engineer","opus",0,1],["security-architect","opus",0,1]]],
+    ["⑤ 품질", "가장 무거운 권한", [["qa-lead","opus",1,0],["functional-tester","opus",0,0],["security-tester","opus",0,0],["compatibility-tester","opus",0,1],["test-automation-engineer","opus",0,1]]],
+    ["⑥ 출시운영", "복붙만 하면 되게", [["gtm-lead","sonnet",1,0],["store-release","sonnet",0,0],["ops-manager","sonnet",0,0],["privacy-compliance","sonnet",0,1],["tech-writer","sonnet",0,1]]],
+    ["🎖️ 감사실", "마스터까지 감시 · 거부권", [["team-master","opus",1,0],["evidence-auditor","opus",1,1]]]
+  ];
+
+  /* ── 화면 ── */
+  var scriptEl = document.getElementById("script");
+  var paras = SCRIPT.map(function(t){
+    var p = document.createElement("p");
+    p.textContent = t;
+    scriptEl.appendChild(p);
+    return p;
+  });
+
+  var unitsEl = document.getElementById("units");
+  UNITS.forEach(function(u){
+    var box = document.createElement("div"); box.className = "unit";
+    var h = document.createElement("div"); h.className = "uhead";
+    var n = document.createElement("span"); n.className = "uname"; n.textContent = u[0];
+    var j = document.createElement("span"); j.className = "ujob"; j.textContent = u[1];
+    h.appendChild(n); h.appendChild(j); box.appendChild(h);
+    u[2].forEach(function(m){
+      var row = document.createElement("div"); row.className = "member";
+      var nm = document.createElement("span");
+      nm.className = "nm" + (m[2] ? " lead" : "");
+      nm.textContent = m[0];
+      row.appendChild(nm);
+      if (m[3]) { var s = document.createElement("span"); s.className = "new"; s.textContent = "신설"; row.appendChild(s); }
+      var b = document.createElement("span"); b.className = "badge"; b.setAttribute("data-m", m[1]); b.textContent = m[1];
+      row.appendChild(b);
+      box.appendChild(row);
+    });
+    unitsEl.appendChild(box);
+  });
+
+  /* ── 낭독 ── */
+  var synth = window.speechSynthesis;
+  var ptt = document.getElementById("ptt");
+  var pttGlyph = document.getElementById("pttGlyph");
+  var pttCap = document.getElementById("pttCap");
+  var stopBtn = document.getElementById("stopBtn");
+  var rateSel = document.getElementById("rate");
+  var voiceSel = document.getElementById("voice");
+  var voiceHint = document.getElementById("voiceHint");
+  var voices = [];
+  var speaking = false;
+
+  function setIdle(){
+    speaking = false;
+    ptt.setAttribute("data-on", "0");
+    pttGlyph.textContent = "▶";
+    pttCap.textContent = "브리핑";
+    stopBtn.disabled = true;
+    paras.forEach(function(p){ p.classList.remove("reading"); });
+  }
+
+  function loadVoices(){
+    if (!synth) return;
+    voices = synth.getVoices() || [];
+    var ko = voices.filter(function(v){ return /^ko/i.test(v.lang); });
+    voiceSel.textContent = "";
+    var list = ko.length ? ko : voices;
+    list.slice(0, 12).forEach(function(v, i){
+      var o = document.createElement("option");
+      o.value = String(voices.indexOf(v));
+      o.textContent = v.name.length > 28 ? v.name.slice(0, 28) + "…" : v.name;
+      if (i === 0) o.selected = true;
+      voiceSel.appendChild(o);
+    });
+    voiceHint.textContent = ko.length
+      ? "한국어 음성 " + ko.length + "개를 찾았습니다."
+      : (voices.length
+          ? "한국어 음성이 없어 발음이 어색할 수 있습니다. 기기 설정에서 추가하십시오."
+          : "음성 목록을 아직 못 읽었습니다. 재생을 한 번 눌러 보십시오.");
+  }
+
+  if (!synth) {
+    voiceHint.textContent = "이 브라우저는 소리 내어 읽기를 지원하지 않습니다.";
+    ptt.disabled = true;
+  } else {
+    loadVoices();
+    if (typeof synth.onvoiceschanged !== "undefined") synth.onvoiceschanged = loadVoices;
+  }
+
+  function speakAll(){
+    if (!synth) return;
+    synth.cancel();
+    speaking = true;
+    ptt.setAttribute("data-on", "1");
+    pttGlyph.textContent = "❚❚";
+    pttCap.textContent = "읽는 중";
+    stopBtn.disabled = false;
+
+    var chosen = voices[parseInt(voiceSel.value, 10)];
+    SCRIPT.forEach(function(text, i){
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = (chosen && chosen.lang) || "ko-KR";
+      if (chosen) u.voice = chosen;
+      u.rate = parseFloat(rateSel.value) || 1;
+      u.onstart = function(){
+        paras.forEach(function(p){ p.classList.remove("reading"); });
+        paras[i].classList.add("reading");
+      };
+      if (i === SCRIPT.length - 1) u.onend = setIdle;
+      u.onerror = setIdle;
+      synth.speak(u);
+    });
+  }
+
+  ptt.addEventListener("click", function(){
+    if (!synth) return;
+    if (speaking) { synth.cancel(); setIdle(); }
+    else { speakAll(); }
+  });
+  stopBtn.addEventListener("click", function(){ if (synth) synth.cancel(); setIdle(); });
+  setIdle();
+
+  /* ── 받아쓰기 ── */
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var micBtn = document.getElementById("micBtn");
+  var micHint = document.getElementById("micHint");
+  var heard = document.getElementById("heard");
+  var copyBtn = document.getElementById("copyBtn");
+  var rec = null, listening = false;
+
+  if (!SR) {
+    micBtn.disabled = true;
+    micHint.textContent = "이 브라우저는 받아쓰기를 지원하지 않습니다. Claude 앱의 마이크를 쓰십시오.";
+  } else {
+    micHint.textContent = "누르고 말씀하십시오. 마이크 권한을 한 번 물어봅니다.";
+    micBtn.addEventListener("click", function(){
+      if (listening) { if (rec) rec.stop(); return; }
+      rec = new SR();
+      rec.lang = "ko-KR";
+      rec.interimResults = true;
+      rec.continuous = true;
+      var settled = "";
+      rec.onstart = function(){
+        listening = true;
+        micBtn.textContent = "■ 멈추기";
+        micHint.textContent = "듣고 있습니다…";
+      };
+      rec.onresult = function(e){
+        var interim = "";
+        for (var i = e.resultIndex; i < e.results.length; i++) {
+          var r = e.results[i];
+          if (r.isFinal) settled += r[0].transcript;
+          else interim += r[0].transcript;
+        }
+        heard.textContent = (settled + interim).trim();
+        copyBtn.disabled = !heard.textContent;
+      };
+      rec.onerror = function(e){
+        micHint.textContent = e.error === "not-allowed"
+          ? "마이크 권한이 거부됐습니다. 브라우저 주소창의 자물쇠에서 허용해 주십시오."
+          : "받아쓰기 오류: " + e.error;
+      };
+      rec.onend = function(){
+        listening = false;
+        micBtn.textContent = "🎙 듣기 시작";
+        if (micHint.textContent === "듣고 있습니다…") micHint.textContent = "멈췄습니다.";
+      };
+      try { rec.start(); } catch (err) { micHint.textContent = "시작하지 못했습니다: " + err.message; }
+    });
+  }
+
+  copyBtn.addEventListener("click", function(){
+    var t = heard.textContent;
+    if (!t) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).then(function(){
+        copyBtn.textContent = "복사됨";
+        setTimeout(function(){ copyBtn.textContent = "복사"; }, 1500);
+      }, function(){ micHint.textContent = "복사하지 못했습니다. 글자를 직접 선택해 주십시오."; });
+    } else {
+      micHint.textContent = "이 브라우저에서는 자동 복사가 안 됩니다. 글자를 직접 선택해 주십시오.";
+    }
+  });
+})();
+</script>

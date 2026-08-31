@@ -6,3 +6,12 @@ __pycache__/
 venv/
 .env
 .DS_Store
+
+# 로컬 동기화 스크립트 로그 (기기별)
+ai-team/.local-sync.log
+
+# 슈퍼베이스 키 — 이 저장소는 공개이므로 절대 커밋하지 않습니다
+ai-team/supabase/.env
+
+# 이미 읽은 보고문 목록 (기기별)
+ai-team/voice-out/.spoken
