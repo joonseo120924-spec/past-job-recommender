@@ -19,7 +19,7 @@ param(
 $ErrorActionPreference = 'Stop'
 try { [Console]::OutputEncoding = [Text.Encoding]::UTF8 } catch { }
 
-$Branch  = 'claude/notion-ai-team-import-8tlqr8'
+$Branch  = 'claude/meeting-room-team-structure-knz8ob'
 $RepoDir = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)   # <repo>/ai-team/scripts → <repo>
 $LogFile = Join-Path $RepoDir 'ai-team\.local-sync.log'
 

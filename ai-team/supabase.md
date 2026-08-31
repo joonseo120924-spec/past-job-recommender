@@ -124,4 +124,4 @@ python3 ai-team/scripts/supabase-sync.py event --kind 결정 \
 
 ## 아직 검증하지 못한 것 (정직하게)
 - `supabase-sync.ps1` 은 **실행해 보지 못했습니다.** 이 컨테이너에 PowerShell 이 없습니다(`pwsh`·`powershell` 부재). `team-sync.ps1` 과 같은 한계입니다 — 문법·구조 검토만 했습니다. **Windows 에서 첫 실행 시 확인이 필요합니다**
-- 07:07 Routine 이 이 스크립트를 부르게 하는 것은 **아직 하지 않았습니다.** Routine 프롬프트 교체는 차단 3번(사용자 지시 필요)에 묶여 있습니다
+- ~~07:07 Routine 연동~~ — **2026-08-30 자동 실행 폐지로 해당 없음.** 이전 서술: **아직 하지 않았습니다.** Routine 프롬프트 교체는 차단 3번(사용자 지시 필요)에 묶여 있습니다

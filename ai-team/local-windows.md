@@ -1,5 +1,10 @@
+> 🔴 **2026-08-30 — 자동 실행은 폐지됐습니다 (사용자 지시).**
+> 계정의 Routine 목록을 조회한 결과 **0건**(완료분 포함)입니다. 매일 07:07 자동 실행은 **없습니다.**
+> 아래 문서에 남은 07:07 서술은 **그때의 기록**이며 현재 동작이 아닙니다.
+> 팀은 이제 **사장님이 부를 때만** 움직입니다 — 「회의실」 또는 「오늘 몫 진행」.
+
 > 🔴 **경고 — 이 문서의 브랜치는 낡았습니다 (2026-08-30 감사 중대-4).**
-> 아래 절차가 가리키는 `claude/notion-ai-team-import-8tlqr8` 은 **에이전트 20명 시절** 브랜치입니다.
+> 아래 절차가 가리키는 `claude/meeting-room-team-structure-knz8ob` 은 **에이전트 20명 시절** 브랜치입니다.
 > 그대로 clone·pull 하면 개편 이전 조직을 받게 되고, `git reset --hard` 는 되돌릴 수 없습니다.
 > 현재 작업 브랜치는 **`claude/meeting-room-team-structure-knz8ob`** 입니다. 브랜치 일원화(B-06)는
 > 사용자 결정 사항이라 문서를 통째로 바꾸지 않고 경고만 답니다.
@@ -43,7 +48,7 @@ PowerShell에서:
 cd C:\Users\User
 git clone https://github.com/joonseo120924-spec/past-job-recommender.git
 cd past-job-recommender
-git checkout claude/notion-ai-team-import-8tlqr8
+git checkout claude/meeting-room-team-structure-knz8ob
 ```
 
 ⚠️ **다른 위치에 clone 하려면 아래 문서의 `C:\Users\User\past-job-recommender` 를 전부 그 경로로 바꾸십시오.** 특히 작업 스케줄러 등록의 `-File` 경로가 어긋나면 **오류 없이 조용히 안 돌게** 됩니다.
@@ -58,7 +63,7 @@ cd C:\Users\User\past-job-recommender
 ```
 
 이 스크립트가 하는 일:
-1. `claude/notion-ai-team-import-8tlqr8` 브랜치를 pull
+1. `claude/meeting-room-team-structure-knz8ob` 브랜치를 pull
 2. `ai-team/STATE.md` (현재 상태 한 장) 를 화면에 출력
 3. 어젯밤 사이클이 남긴 커밋 목록과 노션 미동기화 건수를 보여줌
 4. `ai-team/.local-sync.log` 에 실행 기록을 남김
@@ -109,7 +114,7 @@ mkdir ai-team\apps\2026-08-07 -Force
 Copy-Item C:\Users\User\ai-team\apps\2026-08-07\* ai-team\apps\2026-08-07\ -Recurse -Force
 git add ai-team/apps
 git commit -m "FocusNoise 산출물 로컬에서 이관"
-git push origin claude/notion-ai-team-import-8tlqr8
+git push origin claude/meeting-room-team-structure-knz8ob
 ```
 
 푸시하면 **다음 07:07 사이클이 자동으로 그 파일들을 읽고 ⑤ 품질본부를 재개**합니다. 옮기기 전까지 그 폴더는 아카이브로 두고 손대지 않습니다.
@@ -119,8 +124,8 @@ git push origin claude/notion-ai-team-import-8tlqr8
 저장소가 정본입니다. Windows 로컬 변경이 pull 과 충돌하면 로컬 것을 버리는 쪽이 기본입니다.
 
 ```powershell
-git fetch origin claude/notion-ai-team-import-8tlqr8
-git reset --hard origin/claude/notion-ai-team-import-8tlqr8
+git fetch origin claude/meeting-room-team-structure-knz8ob
+git reset --hard origin/claude/meeting-room-team-structure-knz8ob
 ```
 
 단, 위 FocusNoise 이관처럼 **로컬에서 의도적으로 만든 커밋이 있으면 먼저 푸시**하고 나서 하십시오. `reset --hard` 는 되돌릴 수 없습니다.
